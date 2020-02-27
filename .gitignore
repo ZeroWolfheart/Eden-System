@@ -1,0 +1,16 @@
+### Pesos y logs del sistema ###
+pesos/
+logs/
+test/
+
+### Data Sets ###
+kangaroo-master/
+VOC2012/
+
+### Datos de Python ###
+
+__pycache__/
+
+### Datos IDE ###
+
+.vscode/
