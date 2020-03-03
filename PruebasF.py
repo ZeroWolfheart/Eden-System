@@ -15,7 +15,7 @@ import keras.callbacks as KC
 
 miConfig = Configuracion()
 #miRed = Red(configuracion=miConfig)
-miRed = Red(modelo="pesos/Eden_SystemV3_voc55Y_0010.h5")
+miRed = Red(modelo="pesos/Eden_SystemV3_voc55Y_0028.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
 
@@ -45,7 +45,7 @@ miData.agregar_Clase("tvmonitor")
 miData.cargar_Dataset()
 miData.crear_SubSets()
 
-sgd = KO.SGD(lr=0.001, momentum=0.9, decay=0.0001)
+sgd = KO.SGD(lr=0.0001, momentum=0.9, decay=0.0001)
 miRed.red_neuronal.compile(
     optimizer = sgd,
     loss = 'mean_squared_error'
@@ -85,8 +85,8 @@ callbacks = [
 
 miRed.red_neuronal.fit_generator(
             train_gen,
-            initial_epoch=10,
-            epochs=12,
+            initial_epoch=30,
+            epochs=40,
             steps_per_epoch=pasos,
             callbacks=callbacks,
             validation_data=val_gen,
