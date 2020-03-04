@@ -98,7 +98,7 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
                     dtype=numpy.float
                 )
                 y2 = numpy.zeros(
-                    (tam_batch,) + (configuracion.S, configuracion.S, configuracion.B, 5),
+                    (tam_batch,) + (configuracion.S, configuracion.S, configuracion.B, 4),
                     dtype=numpy.float
                 )
             
@@ -247,7 +247,7 @@ def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None,
     # Tensor de Anchors
     tensor =  numpy.zeros(shape=(S,S,B,5+C))
     # Tensor de deltas
-    tensor2 = numpy.zeros(shape=(S,S,B,5))
+    tensor2 = numpy.zeros(shape=(S,S,B,4))
     # Contador de los tensores
     contador = 0
     # Llenar tensores con los datos
