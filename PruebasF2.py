@@ -19,34 +19,35 @@ import Modelo
 from Configuracion import Configuracion
 
 calses = []
-calses.append("aeroplane")
-calses.append("bicycle")
-calses.append("bird")
-calses.append("boat")
-calses.append("bottle")
-calses.append("bus")
-calses.append("car")
-calses.append("cat")
-calses.append("chair")
-calses.append("cow")
-calses.append("diningtable")
-calses.append("dog")
-calses.append("horse")
-calses.append("motorbike")
-calses.append("person")
-calses.append("pottedplant")
-calses.append("sheep")
-calses.append("sofa")
-calses.append("train")
-calses.append("tvmonitor")
+calses.append("kangaroo")
+# calses.append("aeroplane")
+# calses.append("bicycle")
+# calses.append("bird")
+# calses.append("boat")
+# calses.append("bottle")
+# calses.append("bus")
+# calses.append("car")
+# calses.append("cat")
+# calses.append("chair")
+# calses.append("cow")
+# calses.append("diningtable")
+# calses.append("dog")
+# calses.append("horse")
+# calses.append("motorbike")
+# calses.append("person")
+# calses.append("pottedplant")
+# calses.append("sheep")
+# calses.append("sofa")
+# calses.append("train")
+# calses.append("tvmonitor")
 
 
 
 miConfig = Configuracion()
 
-modelo = KM.load_model("pesos/Eden_SystemV3_voc55L_0050.h5")
+modelo = KM.load_model("pesos/Eden_SystemV3_kanguro55Y_0216.h5")
 
-imagen = skimage.io.imread("cd3.jpeg")
+imagen = skimage.io.imread("test/can5.jpg")
 # Si esta en escala de grises, convertir en RGB para mantener consistencia
 if imagen.ndim != 3:
     imagen = skimage.color.gray2rgb(imagen)
@@ -89,14 +90,14 @@ ax.set_title("el titutlo")
 #imprimir anchors_propuestos, deltas_calculados, clases_anchor
 for i in range(0,len(anchors_propuestos)):
     y1, x1, y2, x2, iou = anchors_propuestos[i]
-    dy,dx,logdh,logdw, idf = deltas_calculados[i]
+    dy,dx,logdh,logdw = deltas_calculados[i]
     
     r,g,b = rn.random(), rn.random(), rn.random()
     cc = numpy.argmax(clases_anchor[i])
     # indicador
-    if iou > 0.4:
+    if iou > 0.30:
         zz=3
-        print(dy,dx,logdh,logdw, idf)
+        print(dy,dx,logdh,logdw)
         deltx =  Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,logdh,logdw])
         print(deltx)
         print([y1,x1,y2,x2])
@@ -108,7 +109,9 @@ for i in range(0,len(anchors_propuestos)):
         amr = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=1, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
         ax.add_patch(amr)
         
-        ax.text(deltx[1]+2,deltx[0] + 8, "{}%: {}".format(iou*100, calses[cc]), color='w', size=11, backgroundcolor="none")
+        perc  = "{0:.2f}".format(iou*100)
+        
+        ax.text(deltx[1]+2,deltx[0] + 8, "{}%: {}".format(perc, calses[cc]), color='w', size=11, backgroundcolor="none")
         
         
 pyplot.imshow(imagen)

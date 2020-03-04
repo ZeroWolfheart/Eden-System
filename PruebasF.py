@@ -14,38 +14,40 @@ import keras.optimizers as KO
 import keras.callbacks as KC
 
 miConfig = Configuracion()
-#miRed = Red(configuracion=miConfig)
-miRed = Red(modelo="pesos/Eden_SystemV3_voc55Y_0028.h5")
+miRed = Red(configuracion=miConfig)
+#miRed = Red(modelo="pesos/Eden_SystemV3_kanguro55Y_0148.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
 
 
-miData = Dataset("voc55Y",  "VOC2012")
-miData.agregar_Clase("aeroplane")
-miData.agregar_Clase("bicycle")
-miData.agregar_Clase("bird")
-miData.agregar_Clase("boat")
-miData.agregar_Clase("bottle")
-miData.agregar_Clase("bus")
-miData.agregar_Clase("car")
-miData.agregar_Clase("cat")
-miData.agregar_Clase("chair")
-miData.agregar_Clase("cow")
-miData.agregar_Clase("diningtable")
-miData.agregar_Clase("dog")
-miData.agregar_Clase("horse")
-miData.agregar_Clase("motorbike")
-miData.agregar_Clase("person")
-miData.agregar_Clase("pottedplant")
-miData.agregar_Clase("sheep")
-miData.agregar_Clase("sofa")
-miData.agregar_Clase("train")
-miData.agregar_Clase("tvmonitor")
+miData = Dataset("kagaroo_v2",  "kagaroo-master")
+miData.agregar_Clase("kangaroo")
+
+#miData.agregar_Clase("aeroplane")
+#miData.agregar_Clase("bicycle")
+#miData.agregar_Clase("bird")
+#miData.agregar_Clase("boat")
+#miData.agregar_Clase("bottle")
+#miData.agregar_Clase("bus")
+#miData.agregar_Clase("car")
+#miData.agregar_Clase("cat")
+#miData.agregar_Clase("chair")
+#miData.agregar_Clase("cow")
+#miData.agregar_Clase("diningtable")
+#miData.agregar_Clase("dog")
+#miData.agregar_Clase("horse")
+#miData.agregar_Clase("motorbike")
+#miData.agregar_Clase("person")
+#miData.agregar_Clase("pottedplant")
+#miData.agregar_Clase("sheep")
+#miData.agregar_Clase("sofa")
+#miData.agregar_Clase("train")
+#miData.agregar_Clase("tvmonitor")
 
 miData.cargar_Dataset()
 miData.crear_SubSets()
 
-sgd = KO.SGD(lr=0.0001, momentum=0.9, decay=0.0001)
+sgd = KO.SGD(lr=0.001, momentum=0.9, decay=0.0001)
 miRed.red_neuronal.compile(
     optimizer = sgd,
     loss = 'mean_squared_error'
@@ -85,8 +87,8 @@ callbacks = [
 
 miRed.red_neuronal.fit_generator(
             train_gen,
-            initial_epoch=30,
-            epochs=40,
+            initial_epoch=0,
+            epochs=60,
             steps_per_epoch=pasos,
             callbacks=callbacks,
             validation_data=val_gen,

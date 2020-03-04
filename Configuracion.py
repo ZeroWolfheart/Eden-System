@@ -14,15 +14,21 @@ class Configuracion:
     IMG_GPU = 1
     
     # Numero de clases a identificar (incluyendo background)
-    NUM_CLASES = 20  # Sobre escribir en subclase
+    NUM_CLASES = 1  # Sobre escribir en subclase
 
     # Longitud de un lado del Anchor cuadrado en pixeles
-    ANCHOR_SCALAS = [32, 64, 128]
+    ANCHOR_SCALAS = [88, 68,  168, 51, 53, 95, 137, 107, 93, 62, 108, 146, 148, 36, 102, 24, 27]
 
     # Factores de Anchors en cada celda (base/ altura)
     # Un valor 1 representa un Anchor cuadrado, y 0.5 es un Anchor más ancho (con mayor base)
-    ANCHOR_FACTORES = [1, 1.25, 1.5]
+    ANCHOR_FACTORES = [0.36, 0.4, 0.58, 0.69, 0.87, 0.97, 0.99, 1.15, 1.29]
 
+    # IoU Minimo para marcar como positivo un Anchor
+    DELTA_IOU_MIN_POSITIVO = 0.4
+    
+    # Umbral maximo para mmarcar como negativo un Anchor
+    DELTA_IOU_MAX_NEGATIVO = 0.3
+    
     # Anchor stride
     # Sí es 1, los Anchors son creados para cada celda de la forma de backbone.
     # Sí es 2, los Anchors son creados para cada otra celda, and so on.

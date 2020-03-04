@@ -14,36 +14,38 @@ import math
 miConfig = Configuracion()
 miRed = Red(configuracion=miConfig)
 
-miData = Dataset("VOC2012",  "VOC2012")
-miData.agregar_Clase("aeroplane")
-miData.agregar_Clase("bicycle")
-miData.agregar_Clase("bird")
-miData.agregar_Clase("boat")
-miData.agregar_Clase("bottle")
-miData.agregar_Clase("bus")
-miData.agregar_Clase("car")
-miData.agregar_Clase("cat")
-miData.agregar_Clase("chair")
-miData.agregar_Clase("cow")
-miData.agregar_Clase("diningtable")
-miData.agregar_Clase("dog")
-miData.agregar_Clase("horse")
-miData.agregar_Clase("motorbike")
-miData.agregar_Clase("person")
-miData.agregar_Clase("pottedplant")
-miData.agregar_Clase("sheep")
-miData.agregar_Clase("sofa")
-miData.agregar_Clase("train")
-miData.agregar_Clase("tvmonitor")
+miData = Dataset("kangarooPrueba",  "kangaroo-master")
+miData.agregar_Clase("kangaroo")
+
+# miData.agregar_Clase("car")
+# miData.agregar_Clase("person")
+# miData.agregar_Clase("aeroplane")
+# miData.agregar_Clase("bicycle")
+# miData.agregar_Clase("bird")
+# miData.agregar_Clase("boat")
+# miData.agregar_Clase("bottle")
+# miData.agregar_Clase("bus")
+# miData.agregar_Clase("cat")
+# miData.agregar_Clase("chair")
+# miData.agregar_Clase("cow")
+# miData.agregar_Clase("diningtable")
+# miData.agregar_Clase("dog")
+# miData.agregar_Clase("horse")
+# miData.agregar_Clase("motorbike")
+# miData.agregar_Clase("pottedplant")
+# miData.agregar_Clase("sheep")
+# miData.agregar_Clase("sofa")
+# miData.agregar_Clase("train")
+# miData.agregar_Clase("tvmonitor")
 
 miData.cargar_Dataset()
 miData.crear_SubSets()
 
 
-miImagen = 6001
+miImagen = 20
 # Original
 pic = miData.cargar_Imagen(miImagen, miData.entrenamiento)
-mask, ids_clase = miData.cargar_Mascara(miImagen,miData.entrenamiento)
+mask, ids_clase = miData.cargar_Mascara(miImagen, miData.entrenamiento)
 
 # Reescalar
 pic, ventana, escala, relleno, aleatorio = Utiles.reescalar_Imagen(pic, minDim=miConfig.MIN_DIM, maxDim=miConfig.MAX_DIM,
@@ -86,15 +88,15 @@ ax.set_title("el titutlo")
 #imprimir anchors_propuestos, deltas_calculados, clases_anchor
 for i in range(0,len(anchors_propuestos)):
     y1, x1, y2, x2, iou = anchors_propuestos[i]
-    dy,dx,logdh,logdw, idf = deltas_calculados[i]
+    dy,dx,logdh,logdw = deltas_calculados[i]
     
     r,g,b = rn.random(), rn.random(), rn.random()
     cc = numpy.argmax(clases_anchor[i])
     
     # indicador
-    if iou > 0.5:
+    if iou > miConfig.DELTA_IOU_MIN_POSITIVO:
         zz=3
-        print(dy,dx,logdh,logdw, idf)
+        print(dy,dx,logdh,logdw)
         deltx =  Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,logdh,logdw])
         print(deltx)
         print([y1,x1,y2,x2])

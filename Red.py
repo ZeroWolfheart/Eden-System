@@ -224,9 +224,9 @@ class Red:
     
     def generar_Salidas(self, capadrp, config):
         salida_tam  = config.S * config.S * config.B * (5 + config.NUM_CLASES)
-        salida_tam2 = config.S * config.S * config.B * 5
+        salida_tam2 = config.S * config.S * config.B * 4
         forma_y1 = (config.S, config.S, config.B, 5 + config.NUM_CLASES)
-        forma_y2 = (config.S, config.S, config.B, 5)
+        forma_y2 = (config.S, config.S, config.B, 4)
         
         if config.RED_TIPO_SALIDA=="Y":
             # Tensor de salida (con formato SxSx(B*5+C))

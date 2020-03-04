@@ -166,8 +166,8 @@ def calcular_Deltas(anchors, cajasContenedoras, iou, configuracion):
     # Utiles.calcular_Sobreposiciones)
     sobrePos = iou
     # Comparar Anchor y cajasContenedoras
-    # Si un anchor se sobrepone a una caja contenedora con un IoU >= 0.7 es positivo
-    # Si por el contrario el valor de IoU < 0.3 es negativo
+    # Si un anchor se sobrepone a una caja contenedora con un IoU >= configuracion.DELTA_IOU_MIN_POSITIVO es positivo
+    # Si por el contrario el valor de IoU < configuracion.DELTA_IOU_MAX_NEGATIVO es negativo
     # Los Anchors neutrales son aquellos que no cumplen con las condiciones anteriores
     # y no tienen influencia en la funcion de perdida.
     # Sin embargo, evitar dejar alguna caja sin clasifica.
@@ -178,7 +178,7 @@ def calcular_Deltas(anchors, cajasContenedoras, iou, configuracion):
     
     anchorIoUargmax = numpy.argmax(sobrePos, axis=1)
     anchorIoUmax = sobrePos[numpy.arange(sobrePos.shape[0]), anchorIoUargmax]
-    identificador [anchorIoUmax < 0.3] = -1
+    identificador [anchorIoUmax < configuracion.DELTA_IOU_MAX_NEGATIVO] = -1
     
     # 2. Proponer un Anchor por cada  caja contenedora (independientemente de su valor IoU)
     # Si multiples Anchors tienen el mismo IoU, identificar todos ellos
@@ -187,7 +187,7 @@ def calcular_Deltas(anchors, cajasContenedoras, iou, configuracion):
     identificador[ioUargmax] = 1
     
     # 3. Marcar los Anchor con alto IoU como positivos
-    identificador[anchorIoUmax >= 0.7] = 1
+    identificador[anchorIoUmax >= configuracion.DELTA_IOU_MIN_POSITIVO] = 1
     
     # Submuestrear para balancear Anchors negativos y positivos
     # No dejar que los positivos sean más de la mitad
@@ -257,9 +257,9 @@ def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None,
         h,w = anchors[a][4], anchors[a][5]
         iou_anchor = max(iou[a])
         dCy, dCx, dH, dW = deltas[a]
-        iden = identificador[a]
-        if iden == 1:
-            iou_anchor = 1.0
+        # iden = identificador[a]
+        # if iden == 1:
+        #     iou_anchor = 1.0
             
         tensor[j][i][contador][0]= cy
         tensor[j][i][contador][1]= cx
@@ -272,7 +272,7 @@ def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None,
         tensor2[j][i][contador][1]=dCx
         tensor2[j][i][contador][2]=dH
         tensor2[j][i][contador][3]=dW
-        tensor2[j][i][contador][4]=iden
+        # tensor2[j][i][contador][4]=iden
         
         contador+=1
         if contador == B:
@@ -317,7 +317,7 @@ def decodificar_Tensores(t1=None, t2=None, forma_Imagen=(0,0), S=7, B=2):
                 dx    = t2[j][i][b][1]
                 logdh = t2[j][i][b][2]
                 logdw = t2[j][i][b][3]
-                idf   = t2[j][i][b][4]
+                # idf   = t2[j][i][b][4]
                 
                 # Codificar salida de T1: (cy,cx,h,w), relativos a la celda y las dimensiones
                 # de la imagen a (y1,x1,y2,x2), coordenadas de las esquinas en pixeles
@@ -340,12 +340,13 @@ def decodificar_Tensores(t1=None, t2=None, forma_Imagen=(0,0), S=7, B=2):
                 logdh = (logdh*20)-10
                 logdw = (logdw*20)-10
                 # Identificador de Anchor positivo
-                idf = ((idf*10)-5)/5
+                # idf = ((idf*10)-5)/5
                 
                 # Integrar a las listas de salida
                 anchors_propuestos.append([y1, x1, y2, x2, iou])
                 clases_anchor.append(probabilidad_clases)
-                deltas_calculados.append([dy, dx, logdh, logdw, idf])
+                # deltas_calculados.append([dy, dx, logdh, logdw, idf])
+                deltas_calculados.append([dy, dx, logdh, logdw])
     # Convertir a objeto numpy, para futuras operaciones
     anchors_propuestos = numpy.array(anchors_propuestos)
     clases_anchor = numpy.array(clases_anchor)
