@@ -13,6 +13,7 @@ import math
 
 miConfig = Configuracion()
 miRed = Red(configuracion=miConfig)
+#miRed.sumarizar_Red()
 
 miData = Dataset("kangarooPrueba",  "kangaroo-master")
 miData.agregar_Clase("kangaroo")
@@ -42,7 +43,7 @@ miData.cargar_Dataset()
 miData.crear_SubSets()
 
 
-miImagen = 20
+miImagen = 22
 # Original
 pic = miData.cargar_Imagen(miImagen, miData.entrenamiento)
 mask, ids_clase = miData.cargar_Mascara(miImagen, miData.entrenamiento)
@@ -55,7 +56,9 @@ cajas = Utiles.extraer_Cajas_Contenedoras(mask)
 
 cajasR = Utiles.convertir_Cajas_a_Relativas(cajas, forma_imagen=(miConfig.FORMA_IMAGEN[0],miConfig.FORMA_IMAGEN[1]), S=miConfig.S)
 
-anclas, centrosA, anclasR = Utiles.generar_Anchors_Celdas(miConfig.ANCHOR_SCALAS,miConfig.ANCHOR_FACTORES,forma_imagen=(miConfig.FORMA_IMAGEN[0],miConfig.FORMA_IMAGEN[1]), S=miConfig.S, B=miConfig.B)
+# anclas, centrosA, anclasR = Utiles.generar_Anchors_Celdas(miConfig.ANCHOR_SCALAS,miConfig.ANCHOR_FACTORES,forma_imagen=(miConfig.FORMA_IMAGEN[0],miConfig.FORMA_IMAGEN[1]), S=miConfig.S, B=miConfig.B)
+
+anclas, centrosA, anclasR = Utiles.generar_Anchors_Celdas_V2(miConfig.ANCHOR_SCALAS,forma_imagen=(miConfig.FORMA_IMAGEN[0],miConfig.FORMA_IMAGEN[1]), S=miConfig.S, B=miConfig.B)
 
 
 iou = Utiles.calcular_Sobreposiciones(anclas, cajas)
@@ -105,11 +108,13 @@ for i in range(0,len(anchors_propuestos)):
         amr2 = Rectangle((deltx[1],deltx[0]), deltx[3]-deltx[1], deltx[2]-deltx[0], linewidth=zz, alpha=0.7, linestyle='dashed', edgecolor=(r,g,b), facecolor='none')
         ax.add_patch(amr2)
         
-        amr = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=1, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
-        ax.add_patch(amr)
-        
         ax.text(deltx[1]+2,deltx[0] + 8, "{}%: {}".format(iou*100, miData.clases[cc]), color='w', size=11, backgroundcolor="none")
         
+        amr = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=2, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
+        ax.add_patch(amr)
+        
+    amr = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=1, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
+    ax.add_patch(amr)
 
 pyplot.imshow(pic)
 for i in range(mask.shape[2]):

@@ -43,8 +43,12 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
     contador_error = 0
     
     # Generar Anchors (anclas)
-    anclas, _centrosA, anclasR = Utiles.generar_Anchors_Celdas(configuracion.ANCHOR_SCALAS,
-                                                        configuracion.ANCHOR_FACTORES,
+    # anclas, _centrosA, anclasR = Utiles.generar_Anchors_Celdas(configuracion.ANCHOR_SCALAS,
+    #                                                     configuracion.ANCHOR_FACTORES,
+    #                                                     forma_imagen=(configuracion.FORMA_IMAGEN[0],configuracion.FORMA_IMAGEN[1]),
+    #                                                     S =configuracion.S,
+    #                                                     B = configuracion.B)
+    anclas, _centrosA, anclasR = Utiles.generar_Anchors_Celdas_V2(configuracion.ANCHOR_SCALAS,
                                                         forma_imagen=(configuracion.FORMA_IMAGEN[0],configuracion.FORMA_IMAGEN[1]),
                                                         S =configuracion.S,
                                                         B = configuracion.B)

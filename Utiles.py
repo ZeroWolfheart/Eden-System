@@ -500,6 +500,99 @@ def generar_Anchors_Celdas(escalas = [32, 64, 128, 256],
     anchorsR = convertir_Cajas_a_Relativas(anchors,forma_imagen=forma_imagen,S=S)
     return anchors, centros, anchorsR
 
+def generar_Anchors_Celdas_V2(escalas = [[104,  93],
+                                         [ 50, 155],
+                                         [ 64, 108],
+                                         [ 35,  95],
+                                         [144, 147],
+                                         [ 34,  33],
+                                         [ 14,  27],
+                                         [ 85, 155],
+                                         [ 69,  58]],
+                              forma_imagen = (448,448),
+                              S = 7, B = 2):
+    """
+    # Argumentos:
+    
+        B: cantidad de Anchors(cajas contenedoras) a generar por celda
+        S: cantidad de celdas a lo largo y ancho de la imagen, para crear una
+            malla de SxS
+        forma_imagen: tupla, con (altura, base) de la imagen para la que se crearán
+            las cajas contenedoras
+        escalas: lista con la dimension de 1 lado de los Anchor a calcular. Ejemplo [32,  64, 128]
+        factores: lsita con los factores de tamaño de los Anchors. Ejemplo [0.5, 1 ,2]
+    """
+    # Enumerar bases y alturas a partir de las escalas
+    escalas  = numpy.array(escalas)
+    alturas = escalas[:,1]
+    bases = escalas[:,0]
+
+    # Enumerar centros dentro de una celda
+    paso_x = (forma_imagen[0]/S)/(B+1)
+    paso_y = (forma_imagen[1]/S)/(B+1)
+    centros_y = numpy.arange(0, (forma_imagen[0]/S), paso_y, dtype=numpy.int8)
+    centros_x = numpy.arange(0, (forma_imagen[0]/S), paso_x, dtype=numpy.int8)
+    # Eliminar 0 de como posición de un centro
+    centros_y = numpy.delete(centros_y,0)
+    centros_x = numpy.delete(centros_x,0)
+    # Invertir "y"
+    centros_y=centros_y[::-1]
+    
+    # Inicializar variables para generar cajas
+    paso_y = forma_imagen[0]/S
+    paso_x = forma_imagen[1]/S
+    anchors =[]
+    centros =[]
+    anchorsR = []
+    indice_caja = -1
+    for _b in range(0,B):
+        for j in range(0,S):
+            for i in  range(0,S):
+                # Indice de caja
+                indice_caja+=1
+                # Espacio en pixeles, previo a la celda que se computa actualmente
+                avance_y = paso_y * j
+                avance_x = paso_x * i
+                
+                # Centros (no relativos)}
+                cy = centros_y[indice_caja%len(centros_y)] + avance_y
+                cx = centros_x[indice_caja%len(centros_x)] + avance_x
+                # Calcular coordenadas de puntos
+                y1 = int(cy - 0.5 * alturas[indice_caja%len(alturas)])
+                y2 = int(cy + 0.5 * alturas[indice_caja%len(alturas)])
+                x1 = int(cx - 0.5 * bases[indice_caja%len(bases)])
+                x2 = int(cx + 0.5 * bases[indice_caja%len(bases)])
+                
+                # La caja es válida?
+                # De no serlo, se corrigen sus dimensiones sin alterar
+                # la posición del centro
+                if y1 < 0:
+                    dif = y1
+                    y1 = 2
+                    y2+= dif
+                if x1 < 0:
+                    dif = x1
+                    x1 = 2
+                    x2+= dif
+                if y2 > forma_imagen[0]:
+                    dif = y2 - forma_imagen[0]
+                    y2 = forma_imagen[0]-2
+                    y1+= dif
+                if x2 > forma_imagen[1]:
+                    dif = x2 - forma_imagen[1]
+                    x2 = forma_imagen[1]-2
+                    x1+= dif                
+                # Añadir elementos a su respectivo arreglo
+                anchors.append([y1,x1,y2,x2])
+                centros.append([cy,cx])
+                
+    # Normalizar salidas como objeto numpy
+    anchors = numpy.array(anchors,dtype=numpy.int32)
+    centros = numpy.array(centros, dtype=numpy.int32)
+    # Calcular valores relativos
+    anchorsR = convertir_Cajas_a_Relativas(anchors,forma_imagen=forma_imagen,S=S)
+    return anchors, centros, anchorsR
+
 def aplicar_Delta_Caja(caja=[],delta=[]):
     """Aplica la delta dada a la caja
     

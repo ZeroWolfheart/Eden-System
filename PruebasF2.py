@@ -45,9 +45,9 @@ calses.append("kangaroo")
 
 miConfig = Configuracion()
 
-modelo = KM.load_model("pesos/Eden_SystemV3_kagaroo_v2_0200.h5")
+modelo = KM.load_model("pesos/Eden_SystemV3_kagaroo_v2_ANC_0193.h5")
 
-imagen = skimage.io.imread("test/can.jpeg")
+imagen = skimage.io.imread("test/can5.jpg")
 # Si esta en escala de grises, convertir en RGB para mantener consistencia
 if imagen.ndim != 3:
     imagen = skimage.color.gray2rgb(imagen)
