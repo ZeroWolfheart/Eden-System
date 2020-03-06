@@ -500,18 +500,11 @@ def generar_Anchors_Celdas(escalas = [32, 64, 128, 256],
     anchorsR = convertir_Cajas_a_Relativas(anchors,forma_imagen=forma_imagen,S=S)
     return anchors, centros, anchorsR
 
-def generar_Anchors_Celdas_V2(escalas = [[104,  93],
-                                         [ 50, 155],
-                                         [ 64, 108],
-                                         [ 35,  95],
-                                         [144, 147],
-                                         [ 34,  33],
-                                         [ 14,  27],
-                                         [ 85, 155],
-                                         [ 69,  58]],
+def generar_Anchors_Celdas_V2(escalas = [[104,  93], [ 50, 155]],
                               forma_imagen = (448,448),
                               S = 7, B = 2):
     """
+        Genera Anchors a partir de los resultados del algoritmo K Means
     # Argumentos:
     
         B: cantidad de Anchors(cajas contenedoras) a generar por celda

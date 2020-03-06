@@ -72,7 +72,7 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
             # Generar ubicación relativa de cajas contenedoras
             cajasR = Utiles.convertir_Cajas_a_Relativas(cajas_contenedoras,
                                                         forma_imagen=(configuracion.FORMA_IMAGEN[0],configuracion.FORMA_IMAGEN[1]),
-                                                        S=  configuracion.S)
+                                                        S = configuracion.S)
             # Calcular IoU
             iou = Utiles.calcular_Sobreposiciones(anclas,
                                                   cajas_contenedoras)
@@ -91,9 +91,14 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
                                              ids_Clase=clases_imagen,
                                              deltas = cajasDelta,
                                              identificador = identificador,
-                                             mejor_Coincidencia=mejorCoincidencia)
+                                             mejor_Coincidencia=mejorCoincidencia,
+                                             usar_Idf=configuracion.USAR_IDF)
             # Inicializar  el array del batch
             if index_batch == 0:
+                if configuracion.USAR_IDF:
+                    tam_nodo_t2 = 5
+                else:
+                    tam_nodo_t2 = 4
                 x = numpy.zeros(
                     (tam_batch,) + imagen.shape, dtype=numpy.float 
                 )
@@ -102,7 +107,7 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
                     dtype=numpy.float
                 )
                 y2 = numpy.zeros(
-                    (tam_batch,) + (configuracion.S, configuracion.S, configuracion.B, 4),
+                    (tam_batch,) + (configuracion.S, configuracion.S, configuracion.B, tam_nodo_t2),
                     dtype=numpy.float
                 )
             
@@ -246,12 +251,19 @@ def calcular_Deltas(anchors, cajasContenedoras, iou, configuracion):
 # Formato de datos
 ##############################################################################################
 
-def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None, ids_Clase=None, deltas = None, identificador = None, mejor_Coincidencia = None):
+def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None, ids_Clase=None,
+                              deltas = None, identificador = None, mejor_Coincidencia = None,
+                              usar_Idf = False):
+    
     # Formato de los tensores
     # Tensor de Anchors
     tensor =  numpy.zeros(shape=(S,S,B,5+C))
     # Tensor de deltas
-    tensor2 = numpy.zeros(shape=(S,S,B,4))
+    if usar_Idf:
+        tam_nodo_t2 = 5
+    else:
+        tam_nodo_t2 = 4
+    tensor2 = numpy.zeros(shape=(S,S,B,tam_nodo_t2))
     # Contador de los tensores
     contador = 0
     # Llenar tensores con los datos
@@ -261,10 +273,10 @@ def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None,
         h,w = anchors[a][4], anchors[a][5]
         iou_anchor = max(iou[a])
         dCy, dCx, dH, dW = deltas[a]
-        # iden = identificador[a]
+        if usar_Idf:
+            iden = identificador[a]
         # if iden == 1:
         #     iou_anchor = 1.0
-            
         tensor[j][i][contador][0]= cy
         tensor[j][i][contador][1]= cx
         tensor[j][i][contador][2]= h
@@ -276,7 +288,8 @@ def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None,
         tensor2[j][i][contador][1]=dCx
         tensor2[j][i][contador][2]=dH
         tensor2[j][i][contador][3]=dW
-        # tensor2[j][i][contador][4]=iden
+        if usar_Idf:
+            tensor2[j][i][contador][4]=iden
         
         contador+=1
         if contador == B:
@@ -287,7 +300,7 @@ def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None,
 # Decodificación de datos
 ##############################################################################################
 
-def decodificar_Tensores(t1=None, t2=None, forma_Imagen=(0,0), S=7, B=2):
+def decodificar_Tensores(t1=None, t2=None, forma_Imagen=(0,0), S=7, B=2, usar_Idf = False):
     
     # Preparar listas de salida
     anchors_propuestos=[]
@@ -321,7 +334,8 @@ def decodificar_Tensores(t1=None, t2=None, forma_Imagen=(0,0), S=7, B=2):
                 dx    = t2[j][i][b][1]
                 logdh = t2[j][i][b][2]
                 logdw = t2[j][i][b][3]
-                # idf   = t2[j][i][b][4]
+                if usar_Idf:
+                    idf   = t2[j][i][b][4]
                 
                 # Codificar salida de T1: (cy,cx,h,w), relativos a la celda y las dimensiones
                 # de la imagen a (y1,x1,y2,x2), coordenadas de las esquinas en pixeles
@@ -344,13 +358,16 @@ def decodificar_Tensores(t1=None, t2=None, forma_Imagen=(0,0), S=7, B=2):
                 logdh = (logdh*20)-10
                 logdw = (logdw*20)-10
                 # Identificador de Anchor positivo
-                # idf = ((idf*10)-5)/5
+                if usar_Idf:
+                    idf = ((idf*10)-5)/5
                 
                 # Integrar a las listas de salida
                 anchors_propuestos.append([y1, x1, y2, x2, iou])
                 clases_anchor.append(probabilidad_clases)
-                # deltas_calculados.append([dy, dx, logdh, logdw, idf])
-                deltas_calculados.append([dy, dx, logdh, logdw])
+                if usar_Idf:
+                    deltas_calculados.append([dy, dx, logdh, logdw, idf])
+                else:
+                    deltas_calculados.append([dy, dx, logdh, logdw])
     # Convertir a objeto numpy, para futuras operaciones
     anchors_propuestos = numpy.array(anchors_propuestos)
     clases_anchor = numpy.array(clases_anchor)

@@ -257,10 +257,16 @@ class Red:
                                 name = "img_entrada")
     
     def generar_Salidas(self, capadrp, config):
+        # Evaluar si se utilizará o no el idf, que pertenece al algoritmo de generación
+        # de deltas
+        if config.USAR_IDF:
+            tam_nodo_t2 = 5
+        else:
+            tam_nodo_t2 = 4
         salida_tam  = config.S * config.S * config.B * (5 + config.NUM_CLASES)
-        salida_tam2 = config.S * config.S * config.B * 4
+        salida_tam2 = config.S * config.S * config.B * tam_nodo_t2
         forma_y1 = (config.S, config.S, config.B, 5 + config.NUM_CLASES)
-        forma_y2 = (config.S, config.S, config.B, 4)
+        forma_y2 = (config.S, config.S, config.B, tam_nodo_t2)
         
         if config.RED_TIPO_SALIDA=="Y":
             # Tensor de salida (con formato SxSx(B*5+C))
@@ -271,7 +277,7 @@ class Red:
             y1 = KL.Dense(salida_tam, activation="sigmoid", name="salida_plana")(y1)
             y1 = KL.Reshape(forma_y1, name="tensor_salida")(y1)
             
-            # Tensor  de salida para Deltas, con formato SXSX(B*5)
+            # Tensor  de salida para Deltas, con formato SXSX(B*tam_nodo_t2)
             # Tamaño de la salida (todos los elementos sin formato)
             y2 = KL.Dense(1000, activation="sigmoid")(capadrp)
             y2 = KL.Dense(500, activation="sigmoid")(y2)
@@ -289,7 +295,7 @@ class Red:
             y2 = KL.Dense(700, activation="sigmoid")(y1)
             y1 = KL.Reshape(forma_y1, name="tensor_salida")(y1)
             
-            # Tensor  de salida para Deltas, con formato SXSX(B*5)
+            # Tensor  de salida para Deltas, con formato SXSX(B*tam_nodo_t2)
             # Tamaño de la salida (todos los elementos sin formato)
             y2 = KL.Dense(500, activation="sigmoid")(y2)
             y2 = KL.Dense(salida_tam2, activation="sigmoid", name="salida_plana2")(y2)

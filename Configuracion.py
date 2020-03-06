@@ -16,12 +16,22 @@ class Configuracion:
     NUM_CLASES = 1  # Sobre escribir en subclase
 
     # Longitud de un lado del Anchor cuadrado en pixeles
-    ANCHOR_SCALAS = [[104,  93], [ 50, 155], [ 64, 108], [ 35,  95],
-                     [144, 147], [ 34,  33], [ 85, 155], [ 69,  58]]
+    ANCHOR_SCALAS =    [[ 21.68877 ,  27.029394],
+                        [ 65.429688, 111.17647 ],
+                        [ 44.92469 ,  41.75885 ],
+                        [168.      , 119.549236],
+                        [ 73.      , 169.269522],
+                        [ 34.980114,  98.681446],
+                        [136.      , 170.8     ],
+                        [103.917694, 152.079476],
+                        [ 89.09091 , 127.835052],
+                        [ 69.775176,  69.309662],
+                        [ 50.485602, 152.764692],
+                        [105.777778,  91.2     ]]
 
     # Factores de Anchors en cada celda (base/ altura)
     # Un valor 1 representa un Anchor cuadrado, y 0.5 es un Anchor más ancho (con mayor base)
-    ANCHOR_FACTORES = [0.36, 0.4, 0.58, 0.69, 0.87, 0.97, 0.99, 1.15, 1.29]
+    ANCHOR_FACTORES =  [0.33, 0.35, 0.43, 0.59, 0.68, 0.7, 0.8, 0.8, 1.01, 1.08, 1.16, 1.41]
 
     # IoU Minimo para marcar como positivo un Anchor
     DELTA_IOU_MIN_POSITIVO = 0.4
@@ -29,10 +39,8 @@ class Configuracion:
     # Umbral maximo para mmarcar como negativo un Anchor
     DELTA_IOU_MAX_NEGATIVO = 0.3
     
-    # Anchor stride
-    # Sí es 1, los Anchors son creados para cada celda de la forma de backbone.
-    # Sí es 2, los Anchors son creados para cada otra celda, and so on.
-    ANCHOR_STRIDE = 1
+    # Utilizar o no el idf del algoritmo de generación de deltas
+    USAR_IDF = True
 
     # Non-max suppression threshold to filter RPN proposals.
     # You can increase this during training to generate more propsals.

@@ -45,7 +45,7 @@ calses.append("kangaroo")
 
 miConfig = Configuracion()
 
-modelo = KM.load_model("pesos/Eden_SystemV3_kagaroo_v2_ANC_0193.h5")
+modelo = KM.load_model("pesos/Eden_SystemV3_kagaroo_v2_ANC_0001.h5")
 
 imagen = skimage.io.imread("test/can5.jpg")
 # Si esta en escala de grises, convertir en RGB para mantener consistencia
@@ -72,7 +72,8 @@ anchors_propuestos, deltas_calculados, clases_anchor =  Modelo.decodificar_Tenso
                                                                                     t2=deltas[0],
                                                                                     forma_Imagen=(miConfig.FORMA_IMAGEN[0], miConfig.FORMA_IMAGEN[1]),
                                                                                     S=miConfig.S,
-                                                                                    B=miConfig.B)
+                                                                                    B=miConfig.B,
+                                                                                    usar_Idf=miConfig)
 
 # Forma de imprimir
 mx,my = imagen.shape[0]//miConfig.S, imagen.shape[1]//miConfig.S
@@ -90,7 +91,10 @@ ax.set_title("el titutlo")
 #imprimir anchors_propuestos, deltas_calculados, clases_anchor
 for i in range(0,len(anchors_propuestos)):
     y1, x1, y2, x2, iou = anchors_propuestos[i]
-    dy,dx,logdh,logdw = deltas_calculados[i]
+    if miConfig.USAR_IDF:
+        dy,dx,logdh,logdw,idf = deltas_calculados[i]
+    else:
+        dy,dx,logdh,logdw = deltas_calculados[i]
     
     r,g,b = rn.random(), rn.random(), rn.random()
     cc = numpy.argmax(clases_anchor[i])

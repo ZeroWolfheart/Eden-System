@@ -43,7 +43,8 @@ miData.cargar_Dataset()
 miData.crear_SubSets()
 
 
-miImagen = 22
+#miImagen = 22
+miImagen = 25
 # Original
 pic = miData.cargar_Imagen(miImagen, miData.entrenamiento)
 mask, ids_clase = miData.cargar_Mascara(miImagen, miData.entrenamiento)
@@ -67,13 +68,15 @@ identificador, cajasDelta, mejorCaja = Modelo.calcular_Deltas(anclas, cajas,  io
 
 
 
-t1, t2 = Modelo.codificar_tensores_Salida(S=miConfig.S, B=miConfig.B, C=miConfig.NUM_CLASES, cajas=cajasR, anchors= anclasR, iou=iou, ids_Clase=ids_clase, deltas=cajasDelta, identificador=identificador, mejor_Coincidencia=mejorCaja)
+t1, t2 = Modelo.codificar_tensores_Salida(S=miConfig.S, B=miConfig.B, C=miConfig.NUM_CLASES, cajas=cajasR, anchors= anclasR, iou=iou, ids_Clase=ids_clase, deltas=cajasDelta, identificador=identificador, mejor_Coincidencia=mejorCaja,
+                                          usar_Idf=False)
 
 anchors_propuestos, deltas_calculados, clases_anchor =  Modelo.decodificar_Tensores(t1=t1,
                                                                                     t2=t2,
                                                                                     forma_Imagen=(miConfig.FORMA_IMAGEN[0], miConfig.FORMA_IMAGEN[1]),
                                                                                     S=miConfig.S,
-                                                                                    B=miConfig.B)
+                                                                                    B=miConfig.B,
+                                                                                    usar_Idf=False)
 
 # Forma de imprimir
 mx,my = pic.shape[0]//miConfig.S, pic.shape[1]//miConfig.S
@@ -97,7 +100,7 @@ for i in range(0,len(anchors_propuestos)):
     cc = numpy.argmax(clases_anchor[i])
     
     # indicador
-    if iou > miConfig.DELTA_IOU_MIN_POSITIVO:
+    if iou > 0.6:# miConfig.DELTA_IOU_MIN_POSITIVO:
         zz=3
         print(dy,dx,logdh,logdw)
         deltx =  Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,logdh,logdw])

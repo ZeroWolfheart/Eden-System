@@ -14,8 +14,8 @@ import keras.optimizers as KO
 import keras.callbacks as KC
 
 miConfig = Configuracion()
-# miRed = Red(configuracion=miConfig)
-miRed = Red(modelo="pesos/Eden_SystemV3_kagaroo_v2_ANC_0113.h5")
+miRed = Red(configuracion=miConfig)
+# miRed = Red(modelo="pesos/Eden_SystemV3_kagaroo_v2_ANC_0113.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
 
@@ -87,8 +87,8 @@ callbacks = [
 
 miRed.red_neuronal.fit_generator(
             train_gen,
-            initial_epoch=120,
-            epochs=200,
+            initial_epoch=0,
+            epochs=1,
             steps_per_epoch=pasos,
             callbacks=callbacks,
             validation_data=val_gen,
