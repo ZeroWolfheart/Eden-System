@@ -14,14 +14,16 @@ import keras.optimizers as KO
 import keras.callbacks as KC
 
 miConfig = Configuracion()
-miRed = Red(configuracion=miConfig)
-# miRed = Red(modelo="pesos/Eden_SystemV3_kagaroo_v2_ANC_0113.h5")
+# miRed = Red(configuracion=miConfig)
+miRed = Red(modelo="pesos/Eden_SystemV4_Frutero_0395.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
 
 
-miData = Dataset("kagaroo_v2_ANC",  "kangaroo-master")
-miData.agregar_Clase("kangaroo")
+miData = Dataset("Frutero",  "frutas")
+miData.agregar_Clase("apple")
+miData.agregar_Clase("banana")
+miData.agregar_Clase("orange")
 
 #miData.agregar_Clase("aeroplane")
 #miData.agregar_Clase("bicycle")
@@ -47,7 +49,7 @@ miData.agregar_Clase("kangaroo")
 miData.cargar_Dataset()
 miData.crear_SubSets()
 
-sgd = KO.SGD(lr=0.0001, momentum=0.9, decay=0.0001)
+sgd = KO.SGD(lr=0.00001, momentum=0.9, decay=0.0001)
 miRed.red_neuronal.compile(
     optimizer = sgd,
     loss = 'mean_squared_error'
@@ -67,7 +69,7 @@ val_gen = Modelo.generador_Datos(dataset=miData,
 pasos = math.ceil(len(miData.entrenamiento) / miConfig.TAM_BATCH)
 val_pasos = math.ceil(len(miData.validacion) / miConfig.TAM_BATCH)
 
-checkpoint_path = os.path.join("pesos", "Eden_SystemV3_{}_*epoch*.h5".format(miData.nombre_Dataset))
+checkpoint_path = os.path.join("pesos", "Eden_SystemV4_{}_*epoch*.h5".format(miData.nombre_Dataset))
 checkpoint_path = checkpoint_path.replace("*epoch*", "{epoch:04d}")
 
 cvs_path = os.path.join("logs", "training_{}.log".format(miData.nombre_Dataset))
@@ -87,13 +89,13 @@ callbacks = [
 
 miRed.red_neuronal.fit_generator(
             train_gen,
-            initial_epoch=0,
-            epochs=1,
+            initial_epoch=414,
+            epochs=1000,
             steps_per_epoch=pasos,
             callbacks=callbacks,
             validation_data=val_gen,
             validation_steps=val_pasos,
             max_queue_size=10,
-            workers=4,
-            use_multiprocessing=True
+            #workers=2,
+            use_multiprocessing=False
         )

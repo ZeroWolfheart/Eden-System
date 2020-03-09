@@ -122,11 +122,10 @@ class Red:
         ####################################################################################
         flat = KL.Flatten()(res5)
         drp = KL.Dropout(0.01)(flat)
-        salidaT1, salidaT2 = self.generar_Salidas(drp,config)
         ######################################################################
         # Generacion de modelo (Red neuronal)
         ######################################################################
-        modelo = KM.Model(inputs=img_entrada, outputs=[salidaT1,salidaT2])
+        modelo = KM.Model(inputs=img_entrada, outputs=self.generar_Salidas(drp,config))
         return modelo
 
     def construir_Conv24(self, config):
@@ -182,12 +181,10 @@ class Red:
         # Preparar para salida
         y = KL.Flatten()(y)
         y = KL.Dropout(0.01)(y)
-        # Generar salidas
-        y1, y2 = self.generar_Salidas(y, config)
         ######################################################################
         # Generacion de modelo (Red neuronal)
         ######################################################################
-        modelo = KM.Model(inputs=x, outputs=[y1,y2])
+        modelo = KM.Model(inputs=x, outputs=self.generar_Salidas(y, config))
         return modelo
 
     def construir_Conv19(self, config):
@@ -239,12 +236,10 @@ class Red:
         # Preparar para salida
         y = KL.Flatten()(y)
         y = KL.Dropout(0.01)(y)
-        # Generar salidas
-        y1, y2 = self.generar_Salidas(y, config)
         ######################################################################
         # Generacion de modelo (Red neuronal)
         ######################################################################
-        modelo = KM.Model(inputs=x, outputs=[y1,y2])
+        modelo = KM.Model(inputs=x, outputs=self.generar_Salidas(y, config))
         return modelo
 
 
@@ -269,39 +264,42 @@ class Red:
         forma_y2 = (config.S, config.S, config.B, tam_nodo_t2)
         
         if config.RED_TIPO_SALIDA=="Y":
-            # Tensor de salida (con formato SxSx(B*5+C))
-            # Tamaño de la salida (todos los elementos sin formato)
+            # Tensor de salida (con formato SxSxBx(5+C))
             y1 = KL.Dense(1000, activation="sigmoid")(capadrp)
             y1 = KL.Dense(500, activation="sigmoid")(y1)
             
             y1 = KL.Dense(salida_tam, activation="sigmoid", name="salida_plana")(y1)
             y1 = KL.Reshape(forma_y1, name="tensor_salida")(y1)
             
-            # Tensor  de salida para Deltas, con formato SXSX(B*tam_nodo_t2)
-            # Tamaño de la salida (todos los elementos sin formato)
+            # Tensor  de salida para Deltas, con formato SxSxBx(tam_nodo_t2)
             y2 = KL.Dense(1000, activation="sigmoid")(capadrp)
             y2 = KL.Dense(500, activation="sigmoid")(y2)
             
             y2 = KL.Dense(salida_tam2, activation="sigmoid", name="salida_plana2")(y2)
             y2 = KL.Reshape(forma_y2, name="tensor_salida2")(y2)
-            return y1,y2
+            return [y1,y2]
         
         elif config.RED_TIPO_SALIDA=="L":
-            # Tensor de salida (con formato SxSx(B*5+C))
-            # Tamaño de la salida (todos los elementos sin formato)
+            # Tensor de salida (con formato SxSxBx(5+C))
             y1 = KL.Dense(1000, activation="sigmoid")(capadrp)
             y1 = KL.Dense(500, activation="sigmoid")(y1)
             y1 = KL.Dense(salida_tam, activation="sigmoid", name="salida_plana")(y1)
             y2 = KL.Dense(700, activation="sigmoid")(y1)
             y1 = KL.Reshape(forma_y1, name="tensor_salida")(y1)
             
-            # Tensor  de salida para Deltas, con formato SXSX(B*tam_nodo_t2)
-            # Tamaño de la salida (todos los elementos sin formato)
+            # Tensor  de salida para Deltas, con formato SXSXxBx(tam_nodo_t2)
             y2 = KL.Dense(500, activation="sigmoid")(y2)
             y2 = KL.Dense(salida_tam2, activation="sigmoid", name="salida_plana2")(y2)
             y2 = KL.Reshape(forma_y2, name="tensor_salida2")(y2)
-            return y1,y2
-    
+            return [y1,y2]
+        
+        elif config.RED_TIPO_SALIDA == "I":
+            # Tensor de salida (con formato SxSxBx(5+C))
+            y1 = KL.Dense(1000, activation="sigmoid")(capadrp)
+            y1 = KL.Dense(500, activation="sigmoid")(y1)
+            y1 = KL.Dense(salida_tam, activation="sigmoid", name="salida_plana")(y1)
+            y1 = KL.Reshape(forma_y1, name="tensor_salida")(y1)
+            return y1
     
     def sumarizar_Red(self):
         """ Imprime en consola la descripción de la red neuronal que se creó, al inicializar el

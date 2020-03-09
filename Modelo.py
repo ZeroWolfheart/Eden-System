@@ -1,6 +1,7 @@
 import random
 import numpy
 import logging
+import math
 
 import Utiles
 from Dataset  import Dataset
@@ -42,12 +43,6 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
     index_imagen = -1
     contador_error = 0
     
-    # Generar Anchors (anclas)
-    # anclas, _centrosA, anclasR = Utiles.generar_Anchors_Celdas(configuracion.ANCHOR_SCALAS,
-    #                                                     configuracion.ANCHOR_FACTORES,
-    #                                                     forma_imagen=(configuracion.FORMA_IMAGEN[0],configuracion.FORMA_IMAGEN[1]),
-    #                                                     S =configuracion.S,
-    #                                                     B = configuracion.B)
     anclas, _centrosA, anclasR = Utiles.generar_Anchors_Celdas_V2(configuracion.ANCHOR_SCALAS,
                                                         forma_imagen=(configuracion.FORMA_IMAGEN[0],configuracion.FORMA_IMAGEN[1]),
                                                         S =configuracion.S,
@@ -69,36 +64,39 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
                                                                                            indice = index_imagen,
                                                                                            configuracion = configuracion,
                                                                                            aumento = False)
-            # Generar ubicación relativa de cajas contenedoras
-            cajasR = Utiles.convertir_Cajas_a_Relativas(cajas_contenedoras,
-                                                        forma_imagen=(configuracion.FORMA_IMAGEN[0],configuracion.FORMA_IMAGEN[1]),
-                                                        S = configuracion.S)
             # Calcular IoU
-            iou = Utiles.calcular_Sobreposiciones(anclas,
-                                                  cajas_contenedoras)
+            iou = Utiles.calcular_Sobreposiciones(anclas, cajas_contenedoras)
+            
             # Calcular desviación entre caja contenedora y ancla
             identificador, cajasDelta, mejorCoincidencia = calcular_Deltas(anclas,
-                                                                           cajas_contenedoras,
-                                                                           iou,
-                                                                           configuracion)
-            
-            tensor1, tensor2 = codificar_tensores_Salida(S=configuracion.S,
-                                             B=configuracion.B,
-                                             C=configuracion.NUM_CLASES,
-                                             cajas=cajasR,
-                                             anchors=anclasR,
-                                             iou=iou,
-                                             ids_Clase=clases_imagen,
-                                             deltas = cajasDelta,
-                                             identificador = identificador,
-                                             mejor_Coincidencia=mejorCoincidencia,
-                                             usar_Idf=configuracion.USAR_IDF)
+                                                                        cajas_contenedoras,
+                                                                        iou,
+                                                                        configuracion)
+            if configuracion.RED_TIPO_SALIDA in ["L","Y"]:
+                
+                tensor1, tensor2 = codificar_tensores_Salida(S=configuracion.S,
+                                                B=configuracion.B,
+                                                C=configuracion.NUM_CLASES,
+                                                anchors=anclasR,
+                                                iou=iou,
+                                                ids_Clase=clases_imagen,
+                                                deltas = cajasDelta,
+                                                identificador = identificador,
+                                                mejor_Coincidencia=mejorCoincidencia,
+                                                usar_Idf=configuracion.USAR_IDF)
+                
+            elif configuracion.RED_TIPO_SALIDA in ["I"]:
+                                
+                tensor1 = codificar_Unico_Tensor_Salida(S=configuracion.S,
+                                                        B=configuracion.B,
+                                                        C=configuracion.NUM_CLASES,
+                                                        anchors=anclasR,
+                                                        ids_Clase=clases_imagen,
+                                                        identificador = identificador,
+                                                        deltas=cajasDelta,
+                                                        mejor_Coincidencia=mejorCoincidencia)
             # Inicializar  el array del batch
             if index_batch == 0:
-                if configuracion.USAR_IDF:
-                    tam_nodo_t2 = 5
-                else:
-                    tam_nodo_t2 = 4
                 x = numpy.zeros(
                     (tam_batch,) + imagen.shape, dtype=numpy.float 
                 )
@@ -106,19 +104,28 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
                     (tam_batch,) + (configuracion.S, configuracion.S, configuracion.B, 5+configuracion.NUM_CLASES),
                     dtype=numpy.float
                 )
-                y2 = numpy.zeros(
-                    (tam_batch,) + (configuracion.S, configuracion.S, configuracion.B, tam_nodo_t2),
-                    dtype=numpy.float
-                )
+                if configuracion.RED_TIPO_SALIDA in ["L","Y"]:
+                    if configuracion.USAR_IDF:
+                        tam_nodo_t2 = 5
+                    else:
+                        tam_nodo_t2 = 4
+                    y2 = numpy.zeros(
+                        (tam_batch,) + (configuracion.S, configuracion.S, configuracion.B, tam_nodo_t2),
+                        dtype=numpy.float
+                    )
             
             # Añadir elementos al batch
             x[index_batch] = imagen
             y[index_batch] = tensor1
-            y2[index_batch] = tensor2
+            if configuracion.RED_TIPO_SALIDA in ["L","Y"]:
+                y2[index_batch] = tensor2
             index_batch +=1
             
             if index_batch >= tam_batch:
-                yield ({"img_entrada":x},{"tensor_salida":y, "tensor_salida2":y2})
+                if configuracion.RED_TIPO_SALIDA in ["L","Y"]:
+                    yield ({"img_entrada":x},{"tensor_salida":y, "tensor_salida2":y2})
+                elif configuracion.RED_TIPO_SALIDA in ["I"]:
+                    yield ({"img_entrada":x},{"tensor_salida":y})
                 # Iniciar un nuevo batch
                 index_batch=0
             
@@ -222,7 +229,7 @@ def calcular_Deltas(anchors, cajasContenedoras, iou, configuracion):
     ids = numpy.where(identificador == 1)[0]
     
     for i, a in zip(ids, anchors[ids]):
-        # Anchor más cercano (IoU>=0.7)
+        # Anchor más cercano (IoU>=configuracion.DELTA_IOU_MIN_POSITIVO)
         gt = cajasContenedoras[anchorIoUargmax[i]]
         
         # Convertirt coordenadas a centro más base/altura
@@ -242,16 +249,16 @@ def calcular_Deltas(anchors, cajasContenedoras, iou, configuracion):
                           (gtCx - aCx)/aW,
                           numpy.log(gtH/aH),
                           numpy.log(gtW/aW)]
-        #cajasDelta[ids] /= configuracion.ENT_CC_STD_DEV
+        
+    identificador =  ((identificador*5)+5)/10
     cajasDelta = (cajasDelta+10)/20
-    identificador =  ((identificador*5)+5)/10 # escalarlo entre 0  y 1
     return identificador, cajasDelta, anchorIoUargmax
 
 ##############################################################################################
 # Formato de datos
 ##############################################################################################
 
-def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None, ids_Clase=None,
+def codificar_tensores_Salida(S=7, B=2, C=1, anchors=None, iou=None, ids_Clase=None,
                               deltas = None, identificador = None, mejor_Coincidencia = None,
                               usar_Idf = False):
     
@@ -273,28 +280,55 @@ def codificar_tensores_Salida(S=7, B=2, C=1, cajas=None, anchors=None, iou=None,
         h,w = anchors[a][4], anchors[a][5]
         iou_anchor = max(iou[a])
         dCy, dCx, dH, dW = deltas[a]
-        if usar_Idf:
-            iden = identificador[a]
-        # if iden == 1:
-        #     iou_anchor = 1.0
-        tensor[j][i][contador][0]= cy
-        tensor[j][i][contador][1]= cx
-        tensor[j][i][contador][2]= h
-        tensor[j][i][contador][3]= w
-        tensor[j][i][contador][4]= iou_anchor
-        tensor[j][i][contador][5+ids_Clase[mejor_Coincidencia[a]]] = 1
+        iden = identificador[a]
         
-        tensor2[j][i][contador][0]=dCy
-        tensor2[j][i][contador][1]=dCx
-        tensor2[j][i][contador][2]=dH
-        tensor2[j][i][contador][3]=dW
-        if usar_Idf:
-            tensor2[j][i][contador][4]=iden
+        if iden == 1:
+            iou_anchor = 1.0
+            tensor[j][i][contador][0]= cy
+            tensor[j][i][contador][1]= cx
+            tensor[j][i][contador][2]= h
+            tensor[j][i][contador][3]= w
+            tensor[j][i][contador][4]= iou_anchor
+            tensor[j][i][contador][5+ids_Clase[mejor_Coincidencia[a]]] = 1
+            
+            tensor2[j][i][contador][0]=dCy
+            tensor2[j][i][contador][1]=dCx
+            tensor2[j][i][contador][2]=dH
+            tensor2[j][i][contador][3]=dW
+            if usar_Idf:
+                tensor2[j][i][contador][4]=iden
         
         contador+=1
         if contador == B:
             contador=0
     return tensor, tensor2
+
+def codificar_Unico_Tensor_Salida(S=7, B=2, C=1, anchors=None,
+                                  ids_Clase=None, identificador = None, 
+                                  deltas = None, mejor_Coincidencia = None):
+
+    # Tensor de Anchors
+    tensor =  numpy.zeros(shape=(S,S,B,5+C))
+    # Contador de los tensores
+    contador = -1
+    # Llenar tensores con los datos
+
+    for a in range(len(anchors)):
+        if a % (S*S)==0:
+            contador+=1
+        j,i = int(anchors[a][0]), int(anchors[a][1])
+        # print(j,i)
+        iden = identificador[a]
+        if iden == 1.0:
+            tensor[j][i][contador][0] = deltas[a][0] #cy
+            tensor[j][i][contador][1] = deltas[a][1] #cx
+            tensor[j][i][contador][2] = deltas[a][2] #h
+            tensor[j][i][contador][3] = deltas[a][3] #w
+            tensor[j][i][contador][4] = 1.0 #pc
+            tensor[j][i][contador][5+ids_Clase[mejor_Coincidencia[a]]] = 1
+        else:
+            tensor[j][i][contador][:4] = 10/20
+    return tensor
 
 ##############################################################################################
 # Decodificación de datos
@@ -335,7 +369,7 @@ def decodificar_Tensores(t1=None, t2=None, forma_Imagen=(0,0), S=7, B=2, usar_Id
                 logdh = t2[j][i][b][2]
                 logdw = t2[j][i][b][3]
                 if usar_Idf:
-                    idf   = t2[j][i][b][4]
+                    idf = t2[j][i][b][4]
                 
                 # Codificar salida de T1: (cy,cx,h,w), relativos a la celda y las dimensiones
                 # de la imagen a (y1,x1,y2,x2), coordenadas de las esquinas en pixeles
@@ -375,3 +409,48 @@ def decodificar_Tensores(t1=None, t2=None, forma_Imagen=(0,0), S=7, B=2, usar_Id
     
     # Regresar valores en numpy array
     return anchors_propuestos, deltas_calculados, clases_anchor
+
+
+def decodificar_Unico_Tensor_Salida(t1=None, anchors=None, S=7, B=2):
+    # Preparar listas de salida
+    cajas_propuestos=[]
+    clases_caja=[]
+    # Analizar la malla (S*S), para extraer las caracteristicas de los B Anchors
+    # de cada celda, y las deltas de dichos Anchors
+    contador = 0
+    for b in range(0,B):
+        # Se inicia en esta forma, ya que los Anchor estan generados de tal forma
+        # que el los anchor desde el 0 hasta el S*S pertencen a B[0] de la malla,
+        # asi consecutivamente hasta que los (S*S) (n-1) pertenecen a los B[n-1] 
+        # de cada celda
+        for j in range(0,S):
+            for i in range(0,S):
+                # Extraer valores del tensor
+                # Tensor 1, deltas y clases
+                dy  = (t1[j][i][b][0]*20)-10
+                dx  = (t1[j][i][b][1]*20)-10
+                dh  = (t1[j][i][b][2]*20)-10
+                dw  = (t1[j][i][b][3]*20)-10
+                pc  = t1[j][i][b][4]
+                # Para todas las cajas, extraer probabilidad de clases
+                probabilidad_clases = t1[j][i][b][5:]
+                
+                # Extraer información del anchor correspondiente al vector
+                # del tensor de salida en proceso
+                y1,x1,y2,x2 = anchors[contador]
+                contador+=1
+                
+                # Calcular la caja correspondiente a partir de la desviación calculada
+                # y el ancla a la que corresponde
+                c_y1,c_x1,c_y2,c_x2 = Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,dh,dw])
+                
+                # Añadir a las listas de salida
+                cajas_propuestos.append([c_y1,c_x1,c_y2,c_x2, pc])
+                clases_caja.append(probabilidad_clases)
+
+    # Convertir a objeto numpy, para futuras operaciones
+    cajas_propuestos = numpy.array(cajas_propuestos)
+    clases_caja = numpy.array(clases_caja)
+    
+    # Regresar valores en numpy array
+    return cajas_propuestos, clases_caja

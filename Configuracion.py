@@ -13,21 +13,21 @@ class Configuracion:
     IMG_GPU = 1
     
     # Numero de clases a identificar (incluyendo background)
-    NUM_CLASES = 1  # Sobre escribir en subclase
+    NUM_CLASES = 3  # Sobre escribir en subclase
 
     # Longitud de un lado del Anchor cuadrado en pixeles
-    ANCHOR_SCALAS =    [[ 21.68877 ,  27.029394],
-                        [ 65.429688, 111.17647 ],
-                        [ 44.92469 ,  41.75885 ],
-                        [168.      , 119.549236],
-                        [ 73.      , 169.269522],
-                        [ 34.980114,  98.681446],
-                        [136.      , 170.8     ],
-                        [103.917694, 152.079476],
-                        [ 89.09091 , 127.835052],
-                        [ 69.775176,  69.309662],
-                        [ 50.485602, 152.764692],
-                        [105.777778,  91.2     ]]
+    ANCHOR_SCALAS =    [[0.34 ,      0.33184524],
+                        [0.275,      0.47321429],
+                        [0.55 ,      0.70676692],
+                        [0.43 ,      0.66165414],
+                        [0.63 ,      0.275     ],
+                        [0.735,      0.51961538],
+                        [0.355,      0.52649123],
+                        [0.245,      0.328     ],
+                        [0.385,      0.405     ],
+                        [0.485,      0.45864662],
+                        [0.17 ,      0.23067164],
+                        [0.795,      0.83      ]]
 
     # Factores de Anchors en cada celda (base/ altura)
     # Un valor 1 representa un Anchor cuadrado, y 0.5 es un Anchor más ancho (con mayor base)
@@ -40,7 +40,7 @@ class Configuracion:
     DELTA_IOU_MAX_NEGATIVO = 0.3
     
     # Utilizar o no el idf del algoritmo de generación de deltas
-    USAR_IDF = True
+    USAR_IDF = False
 
     # Non-max suppression threshold to filter RPN proposals.
     # You can increase this during training to generate more propsals.
@@ -115,7 +115,7 @@ class Configuracion:
     # Debe poder dividir los lados de la imagen de manera entera
     S = 4
     # Cantidad de Anchors (cajas predictivas), generas por cada celda de la regilla
-    B = 5
+    B = 6
     # Cantos Anchors se utilizarán para el entrenamiento en 1 imagen
     ANCHORS_ENTRENAMIENTO_IMAGEN = S*S*B
     
@@ -132,7 +132,9 @@ class Configuracion:
     #   convolucional y clacula por separado, los Anchors y deltas
     # "L": Contruye una salida con forma de L, donde la salida que calcula las deltas, se
     #   se encuentra como una derivación de la salida que calcula los Anchors
-    RED_TIPO_SALIDA = "Y"
+    # "I": Construye una unica salida, que solo contempla los Anchor y la desviación adecuada
+    #   para aquel más apto
+    RED_TIPO_SALIDA = "I"
     
     def __init__(self):
         """Set values of computed attributes."""

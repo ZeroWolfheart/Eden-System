@@ -45,9 +45,9 @@ calses.append("kangaroo")
 
 miConfig = Configuracion()
 
-modelo = KM.load_model("pesos/Eden_SystemV3_kagaroo_v2_ANC_0001.h5")
+modelo = KM.load_model("pesos/Eden_SystemV4_kagarooL_0180.h5")
 
-imagen = skimage.io.imread("test/can5.jpg")
+imagen = skimage.io.imread("test/can.jpeg")
 # Si esta en escala de grises, convertir en RGB para mantener consistencia
 if imagen.ndim != 3:
     imagen = skimage.color.gray2rgb(imagen)
@@ -66,14 +66,14 @@ input[0] = imagen
 print(imagen.shape)
 prediction, deltas = modelo.predict(input)
 
-
+print(prediction[0])
 
 anchors_propuestos, deltas_calculados, clases_anchor =  Modelo.decodificar_Tensores(t1=prediction[0],
                                                                                     t2=deltas[0],
                                                                                     forma_Imagen=(miConfig.FORMA_IMAGEN[0], miConfig.FORMA_IMAGEN[1]),
                                                                                     S=miConfig.S,
                                                                                     B=miConfig.B,
-                                                                                    usar_Idf=miConfig)
+                                                                                    usar_Idf=miConfig.USAR_IDF)
 
 # Forma de imprimir
 mx,my = imagen.shape[0]//miConfig.S, imagen.shape[1]//miConfig.S
