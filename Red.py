@@ -295,9 +295,11 @@ class Red:
         
         elif config.RED_TIPO_SALIDA == "I":
             # Tensor de salida (con formato SxSxBx(5+C))
-            y1 = KL.Dense(1000, activation="sigmoid")(capadrp)
-            y1 = KL.Dense(500, activation="sigmoid")(y1)
-            y1 = KL.Dense(salida_tam, activation="sigmoid", name="salida_plana")(y1)
+            # y1 = KL.Dense(1000, activation="sigmoid")(capadrp)
+            # y1 = KL.Dense(500, activation="sigmoid")(y1)
+            # y1 = KL.Dense(salida_tam, activation="sigmoid", name="salida_plana")(y1)
+            # y1 = KL.Reshape(forma_y1, name="tensor_salida")(y1)
+            y1 = KL.Dense(salida_tam, activation="sigmoid", name="salida_plana")(capadrp)
             y1 = KL.Reshape(forma_y1, name="tensor_salida")(y1)
             return y1
     
