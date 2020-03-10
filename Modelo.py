@@ -64,6 +64,9 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
                                                                                            indice = index_imagen,
                                                                                            configuracion = configuracion,
                                                                                            aumento = False)
+            cajas_relativas = Utiles.convertir_Cajas_a_Relativas(cajas_contenedoras,
+                                                                 (configuracion.FORMA_IMAGEN[0], configuracion.FORMA_IMAGEN[1]),
+                                                                 configuracion.S)
             # Calcular IoU
             iou = Utiles.calcular_Sobreposiciones(anclas, cajas_contenedoras)
             
@@ -91,10 +94,12 @@ def generador_Datos(dataset = Dataset, modo="entrenamiento", configuracion = Con
                                                         B=configuracion.B,
                                                         C=configuracion.NUM_CLASES,
                                                         anchors=anclasR,
+                                                        cajasR = cajas_relativas,
                                                         ids_Clase=clases_imagen,
                                                         identificador = identificador,
                                                         deltas=cajasDelta,
-                                                        mejor_Coincidencia=mejorCoincidencia)
+                                                        mejor_Coincidencia=mejorCoincidencia,
+                                                        IoU = iou)
             # Inicializar  el array del batch
             if index_batch == 0:
                 x = numpy.zeros(
@@ -303,31 +308,42 @@ def codificar_tensores_Salida(S=7, B=2, C=1, anchors=None, iou=None, ids_Clase=N
             contador=0
     return tensor, tensor2
 
-def codificar_Unico_Tensor_Salida(S=7, B=2, C=1, anchors=None,
-                                  ids_Clase=None, identificador = None, 
-                                  deltas = None, mejor_Coincidencia = None):
+def codificar_Unico_Tensor_Salida(S=7, B=2, C=1, anchors=None, cajasR = None,
+                                  ids_Clase = None, identificador = None, 
+                                  deltas = None, mejor_Coincidencia = None, IoU = None):
 
     # Tensor de Anchors
     tensor =  numpy.zeros(shape=(S,S,B,5+C))
     # Contador de los tensores
     contador = -1
+    # print(IoU.shape)
+    mejor_del_mejor=numpy.zeros((len(cajasR),1), dtype=numpy.int32)
+    for i in range(len(cajasR)):
+        mejor_IoU=0
+        for j in range(len(mejor_Coincidencia)):
+            if i==mejor_Coincidencia[j]:
+                if IoU[j][i]>mejor_IoU:
+                    mejor_IoU=IoU[j][i]
+                    mejor_del_mejor[i]=j
+                          
+    # print(mejor_del_mejor)
     # Llenar tensores con los datos
-
     for a in range(len(anchors)):
         if a % (S*S)==0:
             contador+=1
         j,i = int(anchors[a][0]), int(anchors[a][1])
         # print(j,i)
         iden = identificador[a]
-        if iden == 1.0:
-            tensor[j][i][contador][0] = deltas[a][0] #cy
-            tensor[j][i][contador][1] = deltas[a][1] #cx
-            tensor[j][i][contador][2] = deltas[a][2] #h
-            tensor[j][i][contador][3] = deltas[a][3] #w
+        if iden == 1.0 and a in mejor_del_mejor:
+            tensor[j][i][contador][0] = cajasR[mejor_Coincidencia[a]][2] #cy
+            tensor[j][i][contador][1] = cajasR[mejor_Coincidencia[a]][3] #cx
+            tensor[j][i][contador][2] = cajasR[mejor_Coincidencia[a]][4] #h
+            tensor[j][i][contador][3] = cajasR[mejor_Coincidencia[a]][5] #w
             tensor[j][i][contador][4] = 1.0 #pc
             tensor[j][i][contador][5+ids_Clase[mejor_Coincidencia[a]]] = 1
-        else:
-            tensor[j][i][contador][:4] = 10/20
+            print(IoU[a][mejor_Coincidencia[a]])
+        # else:
+        #     tensor[j][i][contador][:4] = 10/20
     return tensor
 
 ##############################################################################################
@@ -411,13 +427,12 @@ def decodificar_Tensores(t1=None, t2=None, forma_Imagen=(0,0), S=7, B=2, usar_Id
     return anchors_propuestos, deltas_calculados, clases_anchor
 
 
-def decodificar_Unico_Tensor_Salida(t1=None, anchors=None, S=7, B=2):
+def decodificar_Unico_Tensor_Salida(t1=None, anchors=None, S=7, B=2, forma_imagen = (0,0)):
     # Preparar listas de salida
     cajas_propuestos=[]
     clases_caja=[]
     # Analizar la malla (S*S), para extraer las caracteristicas de los B Anchors
     # de cada celda, y las deltas de dichos Anchors
-    contador = 0
     for b in range(0,B):
         # Se inicia en esta forma, ya que los Anchor estan generados de tal forma
         # que el los anchor desde el 0 hasta el S*S pertencen a B[0] de la malla,
@@ -427,25 +442,46 @@ def decodificar_Unico_Tensor_Salida(t1=None, anchors=None, S=7, B=2):
             for i in range(0,S):
                 # Extraer valores del tensor
                 # Tensor 1, deltas y clases
-                dy  = (t1[j][i][b][0]*20)-10
-                dx  = (t1[j][i][b][1]*20)-10
-                dh  = (t1[j][i][b][2]*20)-10
-                dw  = (t1[j][i][b][3]*20)-10
-                pc  = t1[j][i][b][4]
+                y  = t1[j][i][b][0]
+                x  = t1[j][i][b][1]
+                h  = t1[j][i][b][2]
+                w  = t1[j][i][b][3]
+                pc = t1[j][i][b][4]
                 # Para todas las cajas, extraer probabilidad de clases
                 probabilidad_clases = t1[j][i][b][5:]
                 
-                # Extraer información del anchor correspondiente al vector
-                # del tensor de salida en proceso
-                y1,x1,y2,x2 = anchors[contador]
-                contador+=1
+                y = y*forma_imagen[0]
+                x = x*forma_imagen[1]
+                h = h*forma_imagen[0]
+                w = w*forma_imagen[1]
                 
-                # Calcular la caja correspondiente a partir de la desviación calculada
-                # y el ancla a la que corresponde
-                c_y1,c_x1,c_y2,c_x2 = Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,dh,dw])
+                y1 = y-(h*0.5)
+                x1 = x-(w*0.5)
+                y2 = y1+h
+                x2 = x1+w
+                
+                # # Extraer valores del tensor
+                # # Tensor 1, deltas y clases
+                # dy  = (t1[j][i][b][0]*20)-10
+                # dx  = (t1[j][i][b][1]*20)-10
+                # dh  = (t1[j][i][b][2]*20)-10
+                # dw  = (t1[j][i][b][3]*20)-10
+                # pc  = t1[j][i][b][4]
+                # # Para todas las cajas, extraer probabilidad de clases
+                # probabilidad_clases = t1[j][i][b][5:]
+                
+                # # Extraer información del anchor correspondiente al vector
+                # # del tensor de salida en proceso
+                # y1,x1,y2,x2 = anchors[contador]
+                # contador+=1
+                
+                # # Calcular la caja correspondiente a partir de la desviación calculada
+                # # y el ancla a la que corresponde
+                # c_y1,c_x1,c_y2,c_x2 = Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,dh,dw])
                 
                 # Añadir a las listas de salida
-                cajas_propuestos.append([c_y1,c_x1,c_y2,c_x2, pc])
+                # cajas_propuestos.append([c_y1,c_x1,c_y2,c_x2, pc])
+                cajas_propuestos.append([y1,x1,y2,x2, pc])
                 clases_caja.append(probabilidad_clases)
 
     # Convertir a objeto numpy, para futuras operaciones
