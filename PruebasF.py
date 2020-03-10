@@ -14,8 +14,8 @@ import keras.optimizers as KO
 import keras.callbacks as KC
 
 miConfig = Configuracion()
-# miRed = Red(configuracion=miConfig)
-miRed = Red(modelo="pesos/Eden_SystemV4_Frutero_0395.h5")
+miRed = Red(configuracion=miConfig)
+#miRed = Red(modelo="pesos/Eden_SystemV4_Frutero_0395.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
 
@@ -49,9 +49,9 @@ miData.agregar_Clase("orange")
 miData.cargar_Dataset()
 miData.crear_SubSets()
 
-sgd = KO.SGD(lr=0.00001, momentum=0.9, decay=0.0001)
+sgd = KO.SGD(lr=0.001, momentum=0.9, decay=0.0001)
 miRed.red_neuronal.compile(
-    optimizer = sgd,
+    optimizer = 'adadelta',
     loss = 'mean_squared_error'
 )
 
@@ -84,13 +84,13 @@ if not os.path.exists("logs"):
 # Callbacks
 callbacks = [
     KC.CSVLogger(cvs_path, separator=',',  append=True),
-    KC.ModelCheckpoint(checkpoint_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False)
+    KC.ModelCheckpoint(checkpoint_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=True)
 ]
 
 miRed.red_neuronal.fit_generator(
             train_gen,
-            initial_epoch=414,
-            epochs=1000,
+            initial_epoch=0,
+            epochs=150,
             steps_per_epoch=pasos,
             callbacks=callbacks,
             validation_data=val_gen,
@@ -99,3 +99,5 @@ miRed.red_neuronal.fit_generator(
             #workers=2,
             use_multiprocessing=False
         )
+
+miRed.red_neuronal.save("pesos/dinal_epoca_{}".format(150), overwrite=True, include_optimizer=True)

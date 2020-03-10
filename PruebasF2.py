@@ -17,9 +17,15 @@ import math
 import Utiles
 import Modelo
 from Configuracion import Configuracion
+from Red import Red
 
 calses = []
-calses.append("kangaroo")
+# calses.append("kangaroo")
+
+calses.append("apple")
+calses.append("banana")
+calses.append("orange")
+
 # calses.append("aeroplane")
 # calses.append("bicycle")
 # calses.append("bird")
@@ -44,10 +50,11 @@ calses.append("kangaroo")
 
 
 miConfig = Configuracion()
+miRed =  Red(configuracion=miConfig)
+miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_0276.h5")
+#modelo = KM.load_model("pesos/Eden_SystemV4_Frutero_0276.h5")
 
-modelo = KM.load_model("pesos/Eden_SystemV4_kagarooL_0180.h5")
-
-imagen = skimage.io.imread("test/can.jpeg")
+imagen = skimage.io.imread("test/platao.jpg")
 # Si esta en escala de grises, convertir en RGB para mantener consistencia
 if imagen.ndim != 3:
     imagen = skimage.color.gray2rgb(imagen)
@@ -64,17 +71,27 @@ imagen, _ventana, _escala, _relleno, _aleatorio = Utiles.reescalar_Imagen(imagen
 input = numpy.zeros((1,miConfig.FORMA_IMAGEN[0],miConfig.FORMA_IMAGEN[1],miConfig.FORMA_IMAGEN[2]))
 input[0] = imagen
 print(imagen.shape)
-prediction, deltas = modelo.predict(input)
 
+if  miConfig.RED_TIPO_SALIDA in ['Y','L']:
+    prediction, deltas = miRed.red_neuronal.predict(input)
+    #modelo.predict(input)
+elif miConfig.RED_TIPO_SALIDA == "I":
+    prediction = miRed.red_neuronal.predict(input)
+    # modelo.predict(input)
 print(prediction[0])
 
-anchors_propuestos, deltas_calculados, clases_anchor =  Modelo.decodificar_Tensores(t1=prediction[0],
+if  miConfig.RED_TIPO_SALIDA in ['Y','L']:
+    anchors_propuestos, deltas_calculados, clases_anchor =  Modelo.decodificar_Tensores(t1=prediction[0],
                                                                                     t2=deltas[0],
                                                                                     forma_Imagen=(miConfig.FORMA_IMAGEN[0], miConfig.FORMA_IMAGEN[1]),
                                                                                     S=miConfig.S,
                                                                                     B=miConfig.B,
                                                                                     usar_Idf=miConfig.USAR_IDF)
-
+elif miConfig.RED_TIPO_SALIDA == "I":
+    anchors_propuestos, clases_anchor = Modelo.decodificar_Unico_Tensor_Salida(t1=prediction[0],
+                                                                               S=miConfig.S,
+                                                                               B=miConfig.B,
+                                                                               forma_imagen=(miConfig.FORMA_IMAGEN[0], miConfig.FORMA_IMAGEN[1]))
 # Forma de imprimir
 mx,my = imagen.shape[0]//miConfig.S, imagen.shape[1]//miConfig.S
 color_malla=[255,255,255]
@@ -91,31 +108,31 @@ ax.set_title("el titutlo")
 #imprimir anchors_propuestos, deltas_calculados, clases_anchor
 for i in range(0,len(anchors_propuestos)):
     y1, x1, y2, x2, iou = anchors_propuestos[i]
-    if miConfig.USAR_IDF:
-        dy,dx,logdh,logdw,idf = deltas_calculados[i]
-    else:
-        dy,dx,logdh,logdw = deltas_calculados[i]
+    # if miConfig.USAR_IDF:
+    #     dy,dx,logdh,logdw,idf = deltas_calculados[i]
+    # else:
+    #     dy,dx,logdh,logdw = deltas_calculados[i]
     
     r,g,b = rn.random(), rn.random(), rn.random()
     cc = numpy.argmax(clases_anchor[i])
     # indicador
     if iou > 0.30:
         zz=3
-        print(dy,dx,logdh,logdw)
-        deltx =  Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,logdh,logdw])
-        print(deltx)
+        # print(dy,dx,logdh,logdw)
+        # deltx =  Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,logdh,logdw])
+        # print(deltx)
         print([y1,x1,y2,x2])
         print(clases_anchor[i])
         
-        amr2 = Rectangle((deltx[1],deltx[0]), deltx[3]-deltx[1], deltx[2]-deltx[0], linewidth=zz, alpha=0.7, linestyle='dashed', edgecolor=(r,g,b), facecolor='none')
-        ax.add_patch(amr2)
+        # amr2 = Rectangle((deltx[1],deltx[0]), deltx[3]-deltx[1], deltx[2]-deltx[0], linewidth=zz, alpha=0.7, linestyle='dashed', edgecolor=(r,g,b), facecolor='none')
+        # ax.add_patch(amr2)
         
         amr = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=1, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
         ax.add_patch(amr)
         
         perc  = "{0:.2f}".format(iou*100)
         
-        ax.text(deltx[1]+2,deltx[0] + 8, "{}%: {}".format(perc, calses[cc]), color='w', size=11, backgroundcolor="none")
+        ax.text(x1+2,y1 + 8, "{}%: {}".format(perc, calses[cc]), color=(r,g,b), size=11, backgroundcolor="none")
         
         
 pyplot.imshow(imagen)

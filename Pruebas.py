@@ -1,11 +1,12 @@
 from Configuracion import Configuracion
 from Red import Red
 from Dataset import Dataset
-from matplotlib import pyplot
-from matplotlib.patches import Rectangle
-
 import Modelo
 import Utiles
+import Visual
+
+from matplotlib import pyplot
+from matplotlib.patches import Rectangle
 
 import numpy
 import random as rn
@@ -13,7 +14,7 @@ import math
 
 miConfig = Configuracion()
 miRed = Red(configuracion=miConfig)
-# miRed.sumarizar_Red()
+miRed.sumarizar_Red()
 
 miData = Dataset("Frutero",  "frutas")
 miData.agregar_Clase("apple")
@@ -46,7 +47,7 @@ miData.crear_SubSets()
 
 
 # miImagen = 22
-miImagen = 22
+miImagen = 66
 # Original
 pic = miData.cargar_Imagen(miImagen, miData.entrenamiento)
 mask, ids_clase = miData.cargar_Mascara(miImagen, miData.entrenamiento)
@@ -59,6 +60,7 @@ cajas = Utiles.extraer_Cajas_Contenedoras(mask)
 
 anclas, centrosA, anclasR = Utiles.generar_Anchors_Celdas_V2(miConfig.ANCHOR_SCALAS,forma_imagen=(miConfig.FORMA_IMAGEN[0],miConfig.FORMA_IMAGEN[1]), S=miConfig.S, B=miConfig.B)
 
+Visual.imprimir_Anchors(anchors=anclas,img=pic,config=miConfig)
 
 iou = Utiles.calcular_Sobreposiciones(anclas, cajas)
 # Calcular desviación entre caja contenedora y ancla
@@ -90,11 +92,13 @@ elif miConfig.RED_TIPO_SALIDA in ["I"]:
                                             B=miConfig.B,
                                             C=miConfig.NUM_CLASES,
                                             anchors=anclasR,
+                                            cajasR= cajasR,
                                             ids_Clase=ids_clase,
                                             identificador = identificador,
                                             deltas=cajasDelta,
-                                            mejor_Coincidencia=mejorCoincidencia)
-
+                                            mejor_Coincidencia=mejorCoincidencia,
+                                            IoU = iou)
+    #print(t1)
 
 if miConfig.RED_TIPO_SALIDA in ["L","Y"]:
     anchors_propuestos, deltas_calculados, clases_anchor =  Modelo.decodificar_Tensores(t1=t1,
@@ -107,7 +111,8 @@ elif miConfig.RED_TIPO_SALIDA in ["I"]:
     anchors_propuestos, clases_anchor = Modelo.decodificar_Unico_Tensor_Salida( t1=t1,
                                                                                 anchors=anclas,
                                                                                 S=miConfig.S,
-                                                                                B=miConfig.B)
+                                                                                B=miConfig.B,
+                                                                                forma_imagen=(miConfig.FORMA_IMAGEN[0],miConfig.FORMA_IMAGEN[1]))
 # Forma de imprimir
 mx,my = pic.shape[0]//miConfig.S, pic.shape[1]//miConfig.S
 color_malla=[255,255,255]
