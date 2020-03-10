@@ -264,7 +264,7 @@ def convertir_Cajas_a_Relativas(cajas, forma_imagen =(0,0), S=7):
         # Calcular la altura de la caja en pixeles
         h = y2-y1
         w = x2-x1
-        # Calcular el centro de la  en pixeles
+        # Calcular el centro de la caja en pixeles
         cx = int(w/2) + x1
         cy = int(h/2) + y1
         # Calcular la altura y base relativa de la caja con respecto a la imagen
@@ -274,8 +274,10 @@ def convertir_Cajas_a_Relativas(cajas, forma_imagen =(0,0), S=7):
         celdax = int(cx // base_celda)
         celday = int(cy // altura_celda)
         # Calcular la posicion relativa del centro dentro de la celda que lo contiene
-        cxr = (cx-(base_celda*celdax))/base_celda
-        cyr = (cy-(altura_celda*celday))/altura_celda
+        # cxr = (cx-(base_celda*celdax))/base_celda
+        # cyr = (cy-(altura_celda*celday))/altura_celda
+        cxr = cx/forma_imagen[1]
+        cyr = cy/forma_imagen[0]
         # Añadir al vector, la información de la caja:
         # Coordenadas de la celda, posición ralativa del centro de la caja, con respecto
         # a la celda y altura y base de la caja, con respecto a la imagen
@@ -523,14 +525,17 @@ def generar_Anchors_Celdas_V2(escalas = [[104,  93], [ 50, 155]],
     # Enumerar centros dentro de una celda
     paso_x = (forma_imagen[0]/S)/(B+1)
     paso_y = (forma_imagen[1]/S)/(B+1)
-    centros_y = numpy.arange(0, (forma_imagen[0]/S), paso_y, dtype=numpy.int8)
-    centros_x = numpy.arange(0, (forma_imagen[0]/S), paso_x, dtype=numpy.int8)
+    centros_y = numpy.arange(0, (forma_imagen[0]/S), paso_y, dtype=numpy.int32)
+    centros_x = numpy.arange(0, (forma_imagen[0]/S), paso_x, dtype=numpy.int32)
     # Eliminar 0 de como posición de un centro
     centros_y = numpy.delete(centros_y,0)
     centros_x = numpy.delete(centros_x,0)
-    # Invertir "y"
+    # Invertir "y"    
     centros_y=centros_y[::-1]
-    
+    centros_x, centros_y = numpy.meshgrid(centros_x, centros_y)
+    centros_y = centros_y.flatten()
+    centros_x = centros_x.flatten()
+
     # Inicializar variables para generar cajas
     paso_y = forma_imagen[0]/S
     paso_x = forma_imagen[1]/S
