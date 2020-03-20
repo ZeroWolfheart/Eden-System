@@ -18,7 +18,7 @@ miRed = Red(configuracion=miConfig)
 #miRed = Red(modelo="pesos/Eden_SystemV4_Frutero_0395.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
-
+miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_8417.h5")
 
 miData = Dataset("Frutero",  "frutas")
 miData.agregar_Clase("apple")
@@ -49,9 +49,9 @@ miData.agregar_Clase("orange")
 miData.cargar_Dataset()
 miData.crear_SubSets()
 
-sgd = KO.SGD(lr=0.001, momentum=0.9, decay=0.0001)
+sgd = KO.SGD(lr=0.001, momentum=0.5, decay=0.0001)
 miRed.red_neuronal.compile(
-    optimizer = 'adadelta',
+    optimizer = sgd,
     loss = 'mean_squared_error'
 )
 
@@ -84,20 +84,20 @@ if not os.path.exists("logs"):
 # Callbacks
 callbacks = [
     KC.CSVLogger(cvs_path, separator=',',  append=True),
-    KC.ModelCheckpoint(checkpoint_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=True)
+    KC.ModelCheckpoint(checkpoint_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False)
 ]
 
 miRed.red_neuronal.fit_generator(
             train_gen,
-            initial_epoch=0,
-            epochs=150,
+            initial_epoch=8417,
+            epochs=9000,
             steps_per_epoch=pasos,
             callbacks=callbacks,
             validation_data=val_gen,
             validation_steps=val_pasos,
             max_queue_size=10,
             #workers=2,
-            use_multiprocessing=False
+            use_multiprocessing=False,
+            verbose=2
         )
-
-miRed.red_neuronal.save("pesos/dinal_epoca_{}".format(150), overwrite=True, include_optimizer=True)
+# miRed.red_neuronal.save("pesos/epoca_{}".format(epoca), overwrite=True, include_optimizer=True)

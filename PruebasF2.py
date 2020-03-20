@@ -50,11 +50,12 @@ calses.append("orange")
 
 
 miConfig = Configuracion()
-miRed =  Red(configuracion=miConfig)
-miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_0276.h5")
+#miRed =  Red(configuracion=miConfig)
+miRed = Red(modelo="pesos/epoca_99")
+#miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_0276.h5")
 #modelo = KM.load_model("pesos/Eden_SystemV4_Frutero_0276.h5")
 
-imagen = skimage.io.imread("test/platao.jpg")
+imagen = skimage.io.imread("test/manzana-macintosh.jpg")
 # Si esta en escala de grises, convertir en RGB para mantener consistencia
 if imagen.ndim != 3:
     imagen = skimage.color.gray2rgb(imagen)
@@ -116,14 +117,14 @@ for i in range(0,len(anchors_propuestos)):
     r,g,b = rn.random(), rn.random(), rn.random()
     cc = numpy.argmax(clases_anchor[i])
     # indicador
-    if iou > 0.30:
+    if iou > 0.00:
         zz=3
         # print(dy,dx,logdh,logdw)
         # deltx =  Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,logdh,logdw])
         # print(deltx)
         print([y1,x1,y2,x2])
         print(clases_anchor[i])
-        
+        print(calses[cc])
         # amr2 = Rectangle((deltx[1],deltx[0]), deltx[3]-deltx[1], deltx[2]-deltx[0], linewidth=zz, alpha=0.7, linestyle='dashed', edgecolor=(r,g,b), facecolor='none')
         # ax.add_patch(amr2)
         

@@ -47,7 +47,7 @@ miData.crear_SubSets()
 
 
 # miImagen = 22
-miImagen = 66
+miImagen = 88
 # Original
 pic = miData.cargar_Imagen(miImagen, miData.entrenamiento)
 mask, ids_clase = miData.cargar_Mascara(miImagen, miData.entrenamiento)

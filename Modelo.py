@@ -341,7 +341,7 @@ def codificar_Unico_Tensor_Salida(S=7, B=2, C=1, anchors=None, cajasR = None,
             tensor[j][i][contador][3] = cajasR[mejor_Coincidencia[a]][5] #w
             tensor[j][i][contador][4] = 1.0 #pc
             tensor[j][i][contador][5+ids_Clase[mejor_Coincidencia[a]]] = 1
-            print(IoU[a][mejor_Coincidencia[a]])
+            # print(IoU[a][mejor_Coincidencia[a]])
         # else:
         #     tensor[j][i][contador][:4] = 10/20
     return tensor
