@@ -18,7 +18,7 @@ miRed = Red(configuracion=miConfig)
 #miRed = Red(modelo="pesos/Eden_SystemV4_Frutero_0395.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
-miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_8417.h5")
+miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_11999.h5")
 
 miData = Dataset("Frutero",  "frutas")
 miData.agregar_Clase("apple")
@@ -81,16 +81,30 @@ if not os.path.exists("pesos"):
 if not os.path.exists("logs"):
     os.makedirs("logs")
 
+auto_borrador = KC.LambdaCallback(
+    on_epoch_end=lambda epoch, logs: borrador("pesos/")
+
+)
+def borrador (direcccion):
+    saves = os.listdir(direcccion)
+    if len(saves) > 3:
+        saves = sorted(saves, reverse=True)
+        borrables = saves[3:]
+        for borrable in borrables:
+            os.remove(direcccion+borrable)
+        
+
 # Callbacks
 callbacks = [
     KC.CSVLogger(cvs_path, separator=',',  append=True),
-    KC.ModelCheckpoint(checkpoint_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False)
+    KC.ModelCheckpoint(checkpoint_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False),
+    auto_borrador
 ]
 
 miRed.red_neuronal.fit_generator(
             train_gen,
-            initial_epoch=8417,
-            epochs=9000,
+            initial_epoch=12000,
+            epochs=14000,
             steps_per_epoch=pasos,
             callbacks=callbacks,
             validation_data=val_gen,
