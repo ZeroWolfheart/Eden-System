@@ -18,7 +18,7 @@ miRed = Red(configuracion=miConfig)
 #miRed = Red(modelo="pesos/Eden_SystemV4_Frutero_0395.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
-miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_11999.h5")
+miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_12854.h5")
 
 miData = Dataset("Frutero",  "frutas")
 miData.agregar_Clase("apple")
@@ -49,7 +49,9 @@ miData.agregar_Clase("orange")
 miData.cargar_Dataset()
 miData.crear_SubSets()
 
-sgd = KO.SGD(lr=0.001, momentum=0.5, decay=0.0001)
+sgd = KO.SGD(lr=0.001,
+             momentum=0.5,
+             decay=0.0001)
 miRed.red_neuronal.compile(
     optimizer = sgd,
     loss = 'mean_squared_error'
@@ -103,8 +105,8 @@ callbacks = [
 
 miRed.red_neuronal.fit_generator(
             train_gen,
-            initial_epoch=12000,
-            epochs=14000,
+            initial_epoch=12854,
+            epochs=15000,
             steps_per_epoch=pasos,
             callbacks=callbacks,
             validation_data=val_gen,

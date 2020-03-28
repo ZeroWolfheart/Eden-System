@@ -51,11 +51,12 @@ calses.append("orange")
 
 miConfig = Configuracion()
 #miRed =  Red(configuracion=miConfig)
-miRed = Red(modelo="pesos/epoca_99")
+dirr = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'pesos'))
+miRed = Red(modelo=dirr+"/Eden_SystemV4_Frutero_13751.h5")
 #miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_0276.h5")
 #modelo = KM.load_model("pesos/Eden_SystemV4_Frutero_0276.h5")
-
-imagen = skimage.io.imread("test/manzana-macintosh.jpg")
+dirr = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'test'))
+imagen = skimage.io.imread(dirr+"/manzana-macintosh.jpg")
 # Si esta en escala de grises, convertir en RGB para mantener consistencia
 if imagen.ndim != 3:
     imagen = skimage.color.gray2rgb(imagen)
