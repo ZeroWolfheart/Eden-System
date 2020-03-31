@@ -1,9 +1,10 @@
-### Herramienta K means ###
-kmeans-anchor-boxes-master
 ### Pesos y logs del sistema ###
-pesos/
-logs/
-test/
+*.h5
+*.log
+
+### Datos de prueba y resultados ###
+pruebas/*
+resultados/*
 
 ### Data Sets ###
 kangaroo-master/
@@ -11,9 +12,7 @@ VOC2012/
 frutas/
 
 ### Datos de Python ###
-
 __pycache__/
 
 ### Datos IDE ###
-
 .vscode/
