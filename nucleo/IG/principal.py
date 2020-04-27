@@ -1,31 +1,22 @@
+import os
 from tkinter import filedialog
 from tkinter import *
 from PIL import Image, ImageTk
 
-canvas =None
-x=0
-y=0
-start_x=0
-start_y=0
-rect=None
+canvas = None
+x = 0
+y = 0
+start_x = 0
+start_y = 0
+rect = None
 
-eRSelect1=None
-eRSelect2=None
-# Funciones Agregar Clase al dataSet
-def agregarClase():
-    aC = Toplevel()
-    aC.title("Nueva Clase")
-    aCframe = Frame(aC)
-    aCframe.pack()
-    labelnE = Label(aCframe, text ="Nombre de Clase")
-    labelnE.grid(row=0,column=0, pady=5, padx=5)
-    nuevaClass = Entry(aCframe, width = 25)
-    nuevaClass.grid(row=1,column=0,columnspan=3, pady=5, padx=5)
-    aCAceptar = Button(aCframe, text = "Aceptar")
-    aCAceptar.grid(row=2, column=2,pady=5, padx=5)
-    aCCancelar = Button(aCframe, text = "Cancelar")
-    aCCancelar.grid(row=2, column=0,pady=5, padx=5)
-    aC.mainloop()
+eRSelect1 = None
+eRSelect2 = None
+
+# Función para abrir labelImg-master
+def iniciar_Etiquetador():
+    dirr = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'labelImg-master'))
+    os.system('/usr/bin/python3 '+ dirr+'/labelImg.py')
 
 #Funciones agregar elementos al dataSet
 def obtenerImagen():
@@ -103,22 +94,34 @@ def on_button_release(event):
 
 
 #Funciones para las opciones de directorio
+#TODO: Borrar esta sección
 def directorios():
     dir = Toplevel()
     dir.title("Administrar directorios")
     dirFrame = Frame(dir)
     dirFrame.pack()
-    dirSelDat = Button(dirFrame, text="Seleccionar directorio de DataSet", command=dirDataSet)
+    dirSelDat = Button(dirFrame, text="Seleccionar directorio de DataSet", command=elegir_Dataset)
     dirSelDat.grid(row=0, column=0, padx=15, pady=10)
-    dirSelRed = Button(dirFrame, text="Seleccionar directorio de Redes", command=dirRedesn)
+    dirSelRed = Button(dirFrame, text="Seleccionar directorio de Redes", command=elegir_Modelo)
     dirSelRed.grid(row=1, column=0, padx=15, pady=10)
     dir.mainloop()
+    
+# Elegir directorio de dataset
+def elegir_Dataset():
+    directorio = filedialog.askdirectory(initialdir = "datasets", title="Seleccionar Directorio")
+    dirrs = directorio.split('/')
+    if dirrs[-1]=="":
+        dirrs[-1]="Ninguno"
+    etiqueta_21.config(text=dirrs[-1])
+    
+# Elegir archivo de modelo
+def elegir_Modelo():
+    archivo = filedialog.askopenfilename(initialdir = "modelos", title="Seleccionar Modelo", filetypes=(("Modelos y Pesos","*.h5"),))
+    dirrs = archivo.split('/')
+    if dirrs[-1]=="":
+        dirrs[-1]="Ninguno"
+    etiqueta_31.config(text=dirrs[-1])
 
-def dirDataSet():
-    directorioData = filedialog.askdirectory()
-
-def dirRedesn():
-    directorioReds = filedialog.askdirectory()
 
 #Funciones de REDES
 
@@ -257,39 +260,80 @@ def obtenerImagen3():
 
 
 
-#Ventana Principal
+# Ventana Principal
 root = Tk()
 root.title("Visión Artificial Basada en Redes Neuronales")
 
+# Barra de Menú
+barra_menu = Menu(root)
+# Menu Dataset
+menu_Dataset = Menu(barra_menu, tearoff=0)
+menu_Dataset.add_command(label='Lanzar "LabelImg"',command=iniciar_Etiquetador)
+menu_Dataset.add_command(label='Seleccionar DataSet',command=elegir_Dataset)
+barra_menu.add_cascade(label="Dataset", menu=menu_Dataset)
+# Menu Dataset
+menu_Modelo = Menu(barra_menu, tearoff=0)
+menu_Modelo.add_command(label='Seleccionar Modelo',command=elegir_Modelo)
+barra_menu.add_cascade(label="Modelo", menu=menu_Modelo)
+
+# Panel principal
 contenedor = Frame(root)
 contenedor.pack()
+
+
+etiqueta_1 = Label(contenedor, text="Información:",
+                   relief=FLAT, height=1,
+                   font=("Helvetica","12","bold"))
+etiqueta_1.grid(row=0, column=0, padx=10, sticky=W)
+
+etiqueta_2 = Label (contenedor, text="Dataset seleccionado:",
+                   relief=FLAT, height=1)
+etiqueta_2.grid(row=1, column=0, padx=10, sticky=W)
+
+etiqueta_21 = Label (contenedor, text="Ninguno",
+                   relief=RIDGE, height=1, width=50)
+etiqueta_21.grid(row=1, column=1, padx=10, sticky=W)
+
+etiqueta_3 = Label (contenedor, text="Modelo seleccionado:",
+                   relief=FLAT, height=1)
+etiqueta_3.grid(row=2, column=0, padx=10, sticky=W)
+
+etiqueta_31 = Label (contenedor, text="Ninguno",
+                   relief=RIDGE, height=1, width=50)
+etiqueta_31.grid(row=2, column=1, padx=10, sticky=W)
+
 #Frame de administación del DataSet
-label1 = Label (contenedor, text = "Administrar DataSet", relief = RAISED, height = 1, width =25)
-label1.grid(row=0,column=0, padx = 10)
+# etiqueta_1 = Label(contenedor, text="Administrar DataSet",
+#                    relief=FLAT, height=1,width=25)
+# etiqueta_1.grid(row=0, column=0,padx =10)
 
-f1 = Frame(contenedor)
-f1.grid(row=1,column=0, rowspan=4)
+# marco_1 = Frame(contenedor)
+# marco_1.grid(row=1, column=0, rowspan=4)
 
-botonAddClass = Button(f1,text ="Agregar Clase", width = 20, command = agregarClase)
-botonAddClass.pack()
-botonAddEle = Button(f1,text ="Agregar Elemento", width = 20, command = obtenerImagen)
-botonAddEle.pack()
+# btn_Admin_Etiquetas = Button(marco_1, text="Administrar Etiquetas",
+#                                      width=20, command=iniciar_Etiquetador)
+# btn_Admin_Etiquetas.pack()
+
+# btn_Elegir_Dataset = Button(marco_1, text="Elegir DataSet",
+#                             width=20, command=iniciar_Etiquetador)
+# btn_Elegir_Dataset.pack()
+
 
 #Frame de uso de Redes Neuronales
-label2 = Label (contenedor, text = "Red Neuronal", relief = RAISED, height = 1, width =25 )
-label2.grid(row=0,column=1, padx = 10)
+# label2 = Label (contenedor, text = "Red Neuronal", relief = RAISED, height = 1, width =25 )
+# label2.grid(row=0,column=1, padx = 10)
 
-f2 = Frame(contenedor)
-f2.grid(row=1,column=1, rowspan=4, pady=10)
+# f2 = Frame(contenedor)
+# f2.grid(row=1,column=1, rowspan=4, pady=10)
 
-botonSelect = Button(f2,text ="Seleccionar", width = 20, command=seleccionarRed)
-botonSelect.pack()
+# botonSelect = Button(f2,text ="Seleccionar", width = 20, command=seleccionarRed)
+# botonSelect.pack()
 
-botonTrain = Button(f2,text ="Entrenar", width = 20, command=entrenarRed)
-botonTrain.pack()
+# botonTrain = Button(f2,text ="Entrenar", width = 20, command=entrenarRed)
+# botonTrain.pack()
 
-botonPredict = Button(f2,text ="Predecir", width = 20, command=predecir1)
-botonPredict.pack()
+# botonPredict = Button(f2,text ="Predecir", width = 20, command=predecir1)
+# botonPredict.pack()
 
 #Frame de Configuración
 label3 = Label (contenedor, text = "Configuración", relief = RAISED, height = 1, width =25 )
@@ -304,4 +348,5 @@ botonCDir.pack()
 botonCAvan = Button(f3,text ="Avanzado", width = 20)
 botonCAvan.pack()
 
+root.config(menu=barra_menu)
 root.mainloop()

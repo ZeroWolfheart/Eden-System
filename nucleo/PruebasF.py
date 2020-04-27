@@ -18,7 +18,7 @@ miRed = Red(configuracion=miConfig)
 #miRed = Red(modelo="pesos/Eden_SystemV4_Frutero_0395.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
-miRed.red_neuronal.load_weights("pesos/Eden_SystemV4_Frutero_12854.h5")
+miRed.red_neuronal.load_weights("modelos/Eden_SystemV4_Frutero_13751.h5")
 
 miData = Dataset("Frutero",  "frutas")
 miData.agregar_Clase("apple")
