@@ -38,21 +38,30 @@ class Dataset:
         dirección donde se aloja el dataset y lo guarda  en informacion_Imagenes
         con formato [{'id':nombre imagen sin extencion, 'rI': ruta de la imagen, 'rA':  ruta de anotaciones},...]
         """
-        # definir directorios de datos
-        dir_Imagenes     = self.direccion_Raiz + '/images/'
-        dir_Anotaciones  = self.direccion_Raiz + '/annots/'
-
-        # encontrar todas las imagenes
-        for nombre_Archivo in listdir(dir_Imagenes):
-            # extraer id de imagen
+        # Encontrar archivos de anotacion (.xml)
+        imgs=[]
+        anots=[]
+        id_img =[]
+        archs = listdir(self.direccion_Raiz)
+        #Encontrar imagenes y enlistar xml
+        for nombre_Archivo in archs:
             punto = nombre_Archivo.find(".")
-            extencion = len(nombre_Archivo)-punto
-            id_Imagen = nombre_Archivo[:-extencion]
-            # construir rutas de imagen y anotaciones
-            ruta_Imagen = dir_Imagenes + nombre_Archivo
-            ruta_Anotacion = dir_Anotaciones + id_Imagen + '.xml'
+            extencion = nombre_Archivo[punto:]
+            # enlistar todos los archivos, excepto anotaciones
+            if extencion != ".xml":
+                imgs.append(nombre_Archivo)
+                id_Imagen = nombre_Archivo[:-(len(nombre_Archivo)-punto)]
+                id_img.append(id_Imagen)
+                # suponer anotaciones para cada archivo
+                anots.append(id_Imagen+".xml")
+
+        # Enlistar pares (archivo-anotaciones) validos
+        for i in range(len(anots)):
+            if anots[i] not in archs:
+                # Si la anotacion de una imagen no existe, no incluir
+                continue
             # añadir datos a la lista (en otra lista, con formato id de imagen, ruta de imagne y ruta de anotaciones)
-            self.informacion_Imagenes.append({'id': id_Imagen,'rI':ruta_Imagen, 'rA':ruta_Anotacion})
+            self.informacion_Imagenes.append({'id':id_img[i], 'rI':self.direccion_Raiz+'/'+imgs[i], 'rA':self.direccion_Raiz+'/'+anots[i]})
 
     def extraer_Cajas(self, ruta_Archivo):
         """ Lee la información de un archivo ".xml" de anotaciones, y obtiene de ella
