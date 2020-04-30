@@ -133,12 +133,10 @@ class Configuracion:
             config.read(archivo)
     ##GPU##
         # Numero de GPU a utilizar.
-        # GPUs = 1
         self.GPUs = config.getint("GPU","GPUs")
         # Numero de imagenes a entrenar en por GPU.
         # Una GPU de 12 GB puede manejar 2 imagenes de 1024*1024px
         # Ajustar con base a la memoria de la GPU a utilizar, siempre buscando el valor más alto
-        # IMG_GPU = 2
         self.IMG_GPU = config.getint("GPU","GPUs")
         
     ##IMAGEN##
@@ -188,14 +186,14 @@ class Configuracion:
         
     ##ANCLAS##
         # Longitud de un lado del Anchor cuadrado en pixeles
-        self.ANCHOR_SCALAS = config.get("ANCLAS","ANCHOR_SCALAS")
+        self.ANCHOR_SCALAS = self._convertidor_Scalas(config.get("ANCLAS","ANCHOR_SCALAS"))
         # Factores de Anchors en cada celda (base/ altura)
         # Un valor 1 representa un Anchor cuadrado, y 0.5 es un Anchor más ancho (con mayor base)
-        self.ANCHOR_FACTORES = config.get("ANCLAS","ANCHOR_SCALAS")
+        self.ANCHOR_FACTORES = self._convertidor_Factores(config.get("ANCLAS","ANCHOR_FACTORES"))
         # Si esta activado, reduce la instancia de la mascara para
         # reducir la carga de memoria. Recomendado cuando se usan imagenes de alta resulucion.
         self.USAR_MINIMASCARA = config.getboolean("ANCLAS","USAR_MINIMASCARA")
-        self.MINIMASCARA_SHAPE = config.get("ANCLAS","MINIMASCARA_SHAPE")
+        self.MINIMASCARA_SHAPE = self._convertidor_Minimascara(config.get("ANCLAS","MINIMASCARA_SHAPE"))
         # Cantos Anchors se utilizarán para el entrenamiento en 1 imagen
         self.ANCHORS_ENTRENAMIENTO_IMAGEN = self.S*self.S*self.B
         
@@ -224,8 +222,8 @@ class Configuracion:
         # Weight decay regularization
         self.WEIGHT_DECAY = config.getfloat("APRENDIZAJE", "WEIGHT_DECAY")
         # Desviacion estandar para el refoinamiento de la caja contenedora para entrenamiento y deteccion
-        self.ENT_CC_STD_DEV = config.get("APRENDIZAJE", "ENT_CC_STD_DEV") #numpy
-        self.BBOX_STD_DEV = config.get("APRENDIZAJE", "BBOX_STD_DEV")#numpy
+        self.ENT_CC_STD_DEV =self._convertidor_Numpy1linea(config.get("APRENDIZAJE", "ENT_CC_STD_DEV")) #numpy
+        self.BBOX_STD_DEV = self._convertidor_Numpy1linea(config.get("APRENDIZAJE", "BBOX_STD_DEV"))#numpy
         
         """Set values of computed attributes."""
         # Tamaño de batch efectivo
@@ -237,3 +235,31 @@ class Configuracion:
         else:
             self.FORMA_IMAGEN = numpy.array([self.MAX_DIM, self.MAX_DIM,
                 self.CANALES])
+        
+    # Metodos privados de la clase, utilizados para
+    # convertir cadenas a valores esperados
+    def _convertidor_Scalas(self, valores=""):
+        valores = valores.splitlines()
+        for i in range(len(valores)):
+            valores[i]=valores[i].split(",")
+            for j in range(len(valores[i])):
+                valores[i][j]=float(valores[i][j])
+        return valores
+    
+    def _convertidor_Factores(self, valores=""):
+        valores = valores.split(",")
+        for i in range(len(valores)):
+            valores[i]=float(valores[i])
+        return valores
+    
+    def _convertidor_Minimascara(self, valores=""):
+        valores=valores.split(",")
+        valores[0]=int(valores[0])
+        valores[1]=int(valores[1])
+        tupla=(valores[0],valores[1])
+        return tupla
+    
+    def _convertidor_Numpy1linea(self, valores=""):
+        lista=self._convertidor_Factores(valores)
+        lista = numpy.array(lista)
+        return lista
