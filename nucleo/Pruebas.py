@@ -16,7 +16,7 @@ miConfig = Configuracion()
 miRed = Red(configuracion=miConfig)
 miRed.sumarizar_Red()
 
-miData = Dataset("Frutero",  "frutas")
+miData = Dataset("Frutero",  "datasets/frutas")
 miData.agregar_Clase("apple")
 miData.agregar_Clase("banana")
 miData.agregar_Clase("orange")
@@ -166,4 +166,3 @@ for i in range(mask.shape[2]):
     pyplot.imshow(mask[:,:,i], cmap='gray', alpha=0.2)
 
 pyplot.show()
-
