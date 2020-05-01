@@ -58,6 +58,25 @@ def elegir_Dataset():
         dirrs[-1]="Ninguno"
     etiqueta_21.config(text=dirrs[-1])
     
+# Elegir lista de clases
+def elegir_ListaClases():
+    archivo = filedialog.askopenfilename(initialdir = "datasets", title="Seleccionar Lista de clases", filetypes=(("Archivo de texto","*.txt"),))
+    dirrs = archivo.split('/')
+    if dirrs[-1]=="":
+        dirrs[-1]="Ninguna"
+    etiqueta_51.config(text=dirrs[-1])
+    if dirrs[-1]!="Ninguna":
+        arc = open(archivo,"r")
+        lista = arc.read()
+        arc.close()
+        lista = lista.splitlines()
+        for linea in lista:
+            lista_1.insert(END, linea)
+    else:
+        for _i in range(lista_1.size()):
+            lista_1.delete(0)
+        
+    
 # Elegir archivo de modelo
 def elegir_Modelo():
     archivo = filedialog.askopenfilename(initialdir = "modelos", title="Seleccionar Modelo", filetypes=(("Modelos y Pesos","*.h5"),))
@@ -221,6 +240,7 @@ barra_menu = Menu(root)
 menu_Dataset = Menu(barra_menu, tearoff=0)
 menu_Dataset.add_command(label='Lanzar "LabelImg"',command=iniciar_Etiquetador)
 menu_Dataset.add_command(label='Seleccionar DataSet',command=elegir_Dataset)
+menu_Dataset.add_command(label='Seleccionar Lista de clases',command=elegir_ListaClases)
 barra_menu.add_cascade(label="Dataset", menu=menu_Dataset)
 # Menu Modelo
 menu_Modelo = Menu(barra_menu, tearoff=0)
@@ -234,7 +254,6 @@ barra_menu.add_cascade(label="Configuración", menu=menu_Configuracion)
 # Panel principal
 contenedor = Frame(root)
 contenedor.pack()
-
 
 etiqueta_1 = Label(contenedor, text="Información:",
                    relief=FLAT, height=1,
@@ -264,6 +283,17 @@ etiqueta_4.grid(row=3, column=0, padx=10, sticky=W)
 etiqueta_41 = Label (contenedor, text="Ninguna",
                    relief=RIDGE, height=1, width=50)
 etiqueta_41.grid(row=3, column=1, padx=10, sticky=W)
+
+etiqueta_5 = Label (contenedor, text="Lista de clases:",
+                   relief=FLAT, height=1)
+etiqueta_5.grid(row=0, column=2, padx=10, sticky=W)
+
+etiqueta_51 = Label (contenedor, text="Ninguna",
+                   relief=RIDGE, height=1, width=16)
+etiqueta_51.grid(row=0, column=3, padx=10, sticky=W)
+
+lista_1 = Listbox(contenedor, height=7, width=30)
+lista_1.grid(row=1, column=2, columnspan=2, rowspan=3, pady=5)
 
 root.config(menu=barra_menu)
 root.mainloop()
