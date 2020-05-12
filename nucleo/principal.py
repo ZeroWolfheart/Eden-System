@@ -3,7 +3,10 @@ from tkinter import filedialog
 from tkinter import *
 from PIL import Image, ImageTk
 
-class Interfaz:
+from Interface import Analizador
+
+
+class Interfaz_Grafica:
     
     def __init__(self):
         # Ventana Principal
@@ -99,8 +102,8 @@ class Interfaz:
 
     # Elegir directorio de dataset
     def elegir_Dataset(self):
-        directorio = filedialog.askdirectory(initialdir = "datasets", title="Seleccionar Directorio")
-        dirrs = directorio.split('/')
+        self.directorio_d = filedialog.askdirectory(initialdir = "datasets", title="Seleccionar Directorio")
+        dirrs = self.directorio_d.split('/')
         if dirrs[-1]=="":
             dirrs[-1]="Ninguno"
         self.etiqueta_21.config(text=dirrs[-1])
@@ -124,30 +127,42 @@ class Interfaz:
 
     # Elegir archivo de modelo
     def elegir_Modelo(self):
-        archivo = filedialog.askopenfilename(initialdir = "modelos", title="Seleccionar Modelo", filetypes=(("Modelos y Pesos","*.h5"),))
-        dirrs = archivo.split('/')
+        self.archivo_M = filedialog.askopenfilename(initialdir = "modelos", title="Seleccionar Modelo", filetypes=(("Modelos y Pesos","*.h5"),))
+        dirrs = self.archivo_M.split('/')
         if dirrs[-1]=="":
             dirrs[-1]="Ninguno"
         self.etiqueta_31.config(text=dirrs[-1])
 
     # Elegir archivo de configuracion
     def elegir_Configuracion(self):
-        archivo = filedialog.askopenfilename(initialdir = "config", title="Seleccionar configuración", filetypes=(("Configuración","*.conf"),))
-        dirrs = archivo.split('/')
+        self.archivo_C = filedialog.askopenfilename(initialdir = "config", title="Seleccionar configuración", filetypes=(("Configuración","*.conf"),))
+        dirrs = self.archivo_C.split('/')
         if dirrs[-1]=="":
             dirrs[-1]="Ninguna"
         self.etiqueta_41.config(text=dirrs[-1])
 
     # Elegir imagen
     def elegir_Imagen(self):
-        archivo = filedialog.askopenfilename(initialdir = "pruebas", title="Seleccionar Imagen", filetypes=(("Imagenes",("*.jpg", "*.jpeg", "*png",
+        self.archivo_I = filedialog.askopenfilename(initialdir = "pruebas", title="Seleccionar Imagen", filetypes=(("Imagenes",("*.jpg", "*.jpeg", "*png",
                                                                                                                         "*.bmp", "*.tif", "*.tiff")),))
-        dirrs = archivo.split('/')
+        dirrs = self.archivo_I.split('/')
         if dirrs[-1]=="":
             dirrs[-1]="Ninguna"
             self.boton_Analizar.config(state=DISABLED)
         else:
             self.boton_Analizar.config(state=NORMAL)
         self.etiqueta_61.config(text=dirrs[-1])
+    
+    # Iniciar Analisis
+    def analizar_Imagen(self):
+        buscador = Analizador()
+        print(self.lista_1.get(first=0, last=self.lista_1.size()))
+        #buscador.cargar_Clases()
+        print(self.archivo_C)
+        #buscador.cargar_Configuracion()
+        print(self.archivo_I)
+        #buscador.cargar_Imagen()
+        print(self.archivo_M)
+        #buscador.cargar_Red()
 
-ventana = Interfaz()
+ventana = Interfaz_Grafica()

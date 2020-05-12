@@ -131,6 +131,7 @@ class Configuracion:
             config.read("config/default.conf")
         else:
             config.read(archivo)
+
     ##GPU##
         # Numero de GPU a utilizar.
         self.GPUs = config.getint("GPU","GPUs")
@@ -138,7 +139,9 @@ class Configuracion:
         # Una GPU de 12 GB puede manejar 2 imagenes de 1024*1024px
         # Ajustar con base a la memoria de la GPU a utilizar, siempre buscando el valor más alto
         self.IMG_GPU = config.getint("GPU","GPUs")
-        
+        # Tamaño de batch efectivo
+        self.TAM_BATCH = self.IMG_GPU * self.GPUs
+
     ##IMAGEN##
         # Reescalado de imagen de entrada
         # Generalmente utilizar "cuadrado" tanto para entrenamiento como predicción
@@ -157,7 +160,12 @@ class Configuracion:
         self.ESCALA_MINIMA = config.getint("IMAGEN","ESCALA_MINIMA")
         # Numero de canales por color. RGB = 3, escala de grises = 1, RGB-D = 4
         self.CANALES = config.getint("IMAGEN","CANALES")
-        
+        # Tamaño de imagen de entrada
+        if self.MODO_REESCALADO == "aleatorio":
+            self.FORMA_IMAGEN = numpy.array([self.MIN_DIM, self.MIN_DIM, self.CANALES])
+        else:
+            self.FORMA_IMAGEN = numpy.array([self.MAX_DIM, self.MAX_DIM, self.CANALES])
+
     ##MODELO##
         # Numero de clases a identificar (incluyendo background)
         self.NUM_CLASES = config.getint("MODELO","NUM_CLASES")
@@ -183,7 +191,7 @@ class Configuracion:
         # "I": Construye una unica salida, que solo contempla los Anchor y la desviación adecuada
         #   para aquel más apto
         self.RED_TIPO_SALIDA = config.get("MODELO","RED_TIPO_SALIDA")
-        
+
     ##ANCLAS##
         # Longitud de un lado del Anchor cuadrado en pixeles
         self.ANCHOR_SCALAS = self._convertidor_Scalas(config.get("ANCLAS","ANCHOR_SCALAS"))
@@ -196,7 +204,7 @@ class Configuracion:
         self.MINIMASCARA_SHAPE = self._convertidor_Minimascara(config.get("ANCLAS","MINIMASCARA_SHAPE"))
         # Cantos Anchors se utilizarán para el entrenamiento en 1 imagen
         self.ANCHORS_ENTRENAMIENTO_IMAGEN = self.S*self.S*self.B
-        
+
     ##APRENDIZAJE##
         # IoU Minimo para marcar como positivo un Anchor
         self.DELTA_IOU_MIN_POSITIVO = config.getfloat("APRENDIZAJE","DELTA_IOU_MIN_POSITIVO")
@@ -224,20 +232,16 @@ class Configuracion:
         # Desviacion estandar para el refoinamiento de la caja contenedora para entrenamiento y deteccion
         self.ENT_CC_STD_DEV =self._convertidor_Numpy1linea(config.get("APRENDIZAJE", "ENT_CC_STD_DEV")) #numpy
         self.BBOX_STD_DEV = self._convertidor_Numpy1linea(config.get("APRENDIZAJE", "BBOX_STD_DEV"))#numpy
-        
-        """Set values of computed attributes."""
-        # Tamaño de batch efectivo
-        self.TAM_BATCH = self.IMG_GPU * self.GPUs
-        # Tamaño de imagen de entrada
-        if self.MODO_REESCALADO == "aleatorio":
-            self.FORMA_IMAGEN = numpy.array([self.MIN_DIM, self.MIN_DIM,
-                self.CANALES])
-        else:
-            self.FORMA_IMAGEN = numpy.array([self.MAX_DIM, self.MAX_DIM,
-                self.CANALES])
-        
-    # Metodos privados de la clase, utilizados para
-    # convertir cadenas a valores esperados
+
+    ##RESPUESTA##
+        # Dibujar o no la malla en la imagen respuesta
+        self.RESP_MALLA = config.getboolean("RESPUESTA","RESP_MALLA")
+        # Probabilidad minima para aceptar una instancia detectada
+        # instancia un valor menor a esta probabilidad seran omitidas
+        self.DETECCION_CONFIDENCIA_MINIMA=config.getfloat("RESPUESTA","DETECCION_CONFIDENCIA_MINIMA")
+
+## Metodos de clase (para leer valores de archivo)
+
     def _convertidor_Scalas(self, valores=""):
         valores = valores.splitlines()
         for i in range(len(valores)):
@@ -245,20 +249,20 @@ class Configuracion:
             for j in range(len(valores[i])):
                 valores[i][j]=float(valores[i][j])
         return valores
-    
+
     def _convertidor_Factores(self, valores=""):
         valores = valores.split(",")
         for i in range(len(valores)):
             valores[i]=float(valores[i])
         return valores
-    
+
     def _convertidor_Minimascara(self, valores=""):
         valores=valores.split(",")
         valores[0]=int(valores[0])
         valores[1]=int(valores[1])
         tupla=(valores[0],valores[1])
         return tupla
-    
+
     def _convertidor_Numpy1linea(self, valores=""):
         lista=self._convertidor_Factores(valores)
         lista = numpy.array(lista)
