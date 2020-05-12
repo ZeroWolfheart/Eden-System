@@ -79,8 +79,8 @@ class Interfaz_Grafica:
 
         self.boton_Elegir = Button(self.contenedor2, text="Elegir Imagen", command=self.elegir_Imagen)
         self.boton_Elegir.grid(row=0, column=0)
-        #TODO: dar funcion al pinche boton
-        self.boton_Analizar = Button(self.contenedor2, text="Analizar Imagen", state=DISABLED)
+        
+        self.boton_Analizar = Button(self.contenedor2, text="Analizar Imagen", command=self.analizar_Imagen, state=DISABLED)
         self.boton_Analizar.grid(row=0, column=1)
 
         self.etiqueta_6 = Label (self.contenedor, text="Imagen seleccionada:",
@@ -156,13 +156,10 @@ class Interfaz_Grafica:
     # Iniciar Analisis
     def analizar_Imagen(self):
         buscador = Analizador()
-        print(self.lista_1.get(first=0, last=self.lista_1.size()))
-        #buscador.cargar_Clases()
-        print(self.archivo_C)
-        #buscador.cargar_Configuracion()
-        print(self.archivo_I)
-        #buscador.cargar_Imagen()
-        print(self.archivo_M)
-        #buscador.cargar_Red()
+        buscador.cargar_Clases(self.lista_1.get(first=0, last=self.lista_1.size()))
+        buscador.cargar_Configuracion(self.archivo_C)
+        buscador.cargar_Imagen(self.archivo_I)
+        buscador.cargar_Red(self.archivo_M)
+        buscador.analizar_Imagen()
 
 ventana = Interfaz_Grafica()
