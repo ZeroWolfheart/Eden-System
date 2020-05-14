@@ -3,12 +3,17 @@ from tkinter import filedialog
 from tkinter import *
 from PIL import Image, ImageTk
 
-from Interface import Analizador
+from Interface import Analizador, Entrenador
 
 
 class Interfaz_Grafica:
     
     def __init__(self):
+        # Atributos a usar
+        self.archivo_P = "" # Archivo de pesos de red
+        self.archivo_I = "" # Archivo de Imagen
+        self.archivo_C = "" # Archivo de configuracion
+        self.directorio_d ="" # Directorio del dataset
         # Ventana Principal
         self.root = Tk()
         self.root.title("Visión Artificial Basada en Redes Neuronales")
@@ -22,9 +27,11 @@ class Interfaz_Grafica:
         self.menu_Dataset.add_command(label='Seleccionar Lista de clases',command=self.elegir_ListaClases)
         self.barra_menu.add_cascade(label="Dataset", menu=self.menu_Dataset)
         # Menu Modelo
-        self.menu_Modelo = Menu(self.barra_menu, tearoff=0)
-        self.menu_Modelo.add_command(label='Seleccionar Modelo',command=self.elegir_Modelo)
-        self.barra_menu.add_cascade(label="Modelo", menu=self.menu_Modelo)
+        self.menu_Red = Menu(self.barra_menu, tearoff=0)
+        self.menu_Red.add_command(label='Seleccionar Pesos',command=self.elegir_Pesos)
+        self.menu_Red.add_separator()
+        self.menu_Red.add_command(label='Entrenar Modelo',command=self.entrenar)
+        self.barra_menu.add_cascade(label="Red", menu=self.menu_Red)
         # Menu Configuración
         self.menu_Configuracion = Menu(self.barra_menu, tearoff=0)
         self.menu_Configuracion.add_command(label="Seleccionar Configuracion", command=self.elegir_Configuracion)
@@ -91,6 +98,16 @@ class Interfaz_Grafica:
                         relief=RIDGE, height=1, width=50)
         self.etiqueta_61.grid(row=5, column=1, padx=10, sticky=W)
 
+        self.etiqueta_7 = Label (self.contenedor, text="Epocas para entrenamiento:",
+                        relief=FLAT, height=1)
+        self.etiqueta_7.grid(row=4, column=2, padx=10, columnspan=2)
+        
+        def only_numbers(char):
+            return char.isdigit()
+        validacion = self.root.register(only_numbers)
+        self.entrada_1 = Entry(self.contenedor,  validate="key", validatecommand=(validacion, '%P'))
+        self.entrada_1.grid(row=5, column=2, padx=10, columnspan=2)
+        
         self.root.config(menu=self.barra_menu)
         self.root.mainloop()
     
@@ -126,9 +143,9 @@ class Interfaz_Grafica:
         self.etiqueta_51.config(text=dirrs[-1])
 
     # Elegir archivo de modelo
-    def elegir_Modelo(self):
-        self.archivo_M = filedialog.askopenfilename(initialdir = "modelos", title="Seleccionar Modelo", filetypes=(("Modelos y Pesos","*.h5"),))
-        dirrs = self.archivo_M.split('/')
+    def elegir_Pesos(self):
+        self.archivo_P = filedialog.askopenfilename(initialdir = "pesos", title="Seleccionar Pesos de Red", filetypes=(("Modelos y Pesos","*.h5"),))
+        dirrs = self.archivo_P.split('/')
         if dirrs[-1]=="":
             dirrs[-1]="Ninguno"
         self.etiqueta_31.config(text=dirrs[-1])
@@ -152,14 +169,22 @@ class Interfaz_Grafica:
         else:
             self.boton_Analizar.config(state=NORMAL)
         self.etiqueta_61.config(text=dirrs[-1])
-    
+
     # Iniciar Analisis
     def analizar_Imagen(self):
         buscador = Analizador()
         buscador.cargar_Clases(self.lista_1.get(first=0, last=self.lista_1.size()))
         buscador.cargar_Configuracion(self.archivo_C)
         buscador.cargar_Imagen(self.archivo_I)
-        buscador.cargar_Red(self.archivo_M)
+        buscador.cargar_Red(self.archivo_P)
         buscador.analizar_Imagen()
-
+    
+    def entrenar(self):
+        entrenador = Entrenador()
+        entrenador.cargar_Configuracion(self.archivo_C)
+        entrenador.cargar_Red(self.archivo_P)
+        entrenador.cargar_Dataset(ruta=self.directorio_d, nombre=self.etiqueta_21.cget("text"), clases=self.lista_1.get(first=0, last=self.lista_1.size()))
+        entrenador.establecer_Epocas_Entrenamiento(cantidad=self.entrada_1.get())
+        entrenador.entrenar_Red()
+        
 ventana = Interfaz_Grafica()
