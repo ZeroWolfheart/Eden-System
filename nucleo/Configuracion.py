@@ -17,6 +17,12 @@ class Configuracion:
         # Una GPU de 12 GB puede manejar 2 imagenes de 1024*1024px
         # Ajustar con base a la memoria de la GPU a utilizar, siempre buscando el valor más alto
         self.IMG_GPU = config.getint("GPU","GPUs")
+        # Usar multiproceso, solo si existe mas de una gpu
+        self.USAR_MULTI= config.getboolean("GPU","USAR_MULTI")
+        # Tamaño de la cola del generador (Keras usa por default 10), menor tamaño = menor uso de ram
+        self.COLA=config.getint("GPU","COLA")
+        # Cantidad de hilos en los que se dividira el trabajo (keras usa 1 por defecto), si se usa 0 pasará al hilo principal del GPU
+        self.TRABAJADORES=config.getint("GPU","TRABAJADORES")
         # Tamaño de batch efectivo
         self.TAM_BATCH = self.IMG_GPU * self.GPUs
 
@@ -96,18 +102,19 @@ class Configuracion:
         self.DETECTION_MAX_INSTANCES = config.getint("APRENDIZAJE", "DETECTION_MAX_INSTANCES")
         # Non-maximum suppression threshold for detection
         self.DETECTION_NMS_THRESHOLD = config.getfloat("APRENDIZAJE", "DETECTION_NMS_THRESHOLD")
-        # Learning rate and momentum
-        # The Mask RCNN paper uses lr=0.02, but on TensorFlow it causes
-        # weights to explode. Likely due to differences in optimizer
-        # implementation.
-        self.LEARNING_RATE = config.getfloat("APRENDIZAJE", "LEARNING_RATE")
-        self.LEARNING_MOMENTUM = config.getfloat("APRENDIZAJE", "LEARNING_MOMENTUM")
-        # Weight decay regularization
-        self.WEIGHT_DECAY = config.getfloat("APRENDIZAJE", "WEIGHT_DECAY")
+        # Tasa de aprendizaje y momento
+        self.APRENDIZAJE_TASA = config.getfloat("APRENDIZAJE", "APRENDIZAJE_TASA") # Learning rate (lr)
+        self.APRENDIZAJE_MOMENTO = config.getfloat("APRENDIZAJE", "APRENDIZAJE_MOMENTO") # Momentum
+        # Rgularizacion de la perdida de pesos
+        self.PESO_PERDIDA = config.getfloat("APRENDIZAJE", "PESO_PERDIDA") # Weigth Decay
         # Desviacion estandar para el refoinamiento de la caja contenedora para entrenamiento y deteccion
         self.ENT_CC_STD_DEV =self._convertidor_Numpy1linea(config.get("APRENDIZAJE", "ENT_CC_STD_DEV")) #numpy
         self.BBOX_STD_DEV = self._convertidor_Numpy1linea(config.get("APRENDIZAJE", "BBOX_STD_DEV"))#numpy
-
+        # Guardar logs de entrenamiento
+        self.ENTRENAMIENTO_LOGS=config.getboolean("APRENDIZAJE","ENTRENAMIENTO_LOGS")
+        # Cantidad de archivos de pesos que se desea guardar (mantener numeros  bajos si se tiene poco almacenamiento disponible)
+        self.GUARDADOS_MAX=config.getint("APRENDIZAJE","GUARDADOS_MAX")
+        
     ##RESPUESTA##
         # Dibujar o no la malla en la imagen respuesta
         self.RESP_MALLA = config.getboolean("RESPUESTA","RESP_MALLA")
