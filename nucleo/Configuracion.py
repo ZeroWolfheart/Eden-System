@@ -118,6 +118,8 @@ class Configuracion:
     ##RESPUESTA##
         # Dibujar o no la malla en la imagen respuesta
         self.RESP_MALLA = config.getboolean("RESPUESTA","RESP_MALLA")
+        # Color de la malla
+        self.RESP_COLOR_MALLA= self._convertidor_Factores(config.get("RESPUESTA","RESP_COLOR_MALLA"))
         # Probabilidad minima para aceptar una instancia detectada
         # instancia un valor menor a esta probabilidad seran omitidas
         self.DETECCION_CONFIDENCIA_MINIMA=config.getfloat("RESPUESTA","DETECCION_CONFIDENCIA_MINIMA")
