@@ -332,9 +332,8 @@ def codificar_Unico_Tensor_Salida(S=7, B=2, C=1, anchors=None, cajasR = None,
         if a % (S*S)==0:
             contador+=1
         j,i = int(anchors[a][0]), int(anchors[a][1])
-        # print(j,i)
         iden = identificador[a]
-        if iden == 1.0 and a in mejor_del_mejor:
+        if iden == 1.0: #and a in mejor_del_mejor:
             tensor[j][i][contador][0] = cajasR[mejor_Coincidencia[a]][2] #cy
             tensor[j][i][contador][1] = cajasR[mejor_Coincidencia[a]][3] #cx
             tensor[j][i][contador][2] = cajasR[mejor_Coincidencia[a]][4] #h
@@ -342,8 +341,12 @@ def codificar_Unico_Tensor_Salida(S=7, B=2, C=1, anchors=None, cajasR = None,
             tensor[j][i][contador][4] = 1.0 #pc
             tensor[j][i][contador][5+ids_Clase[mejor_Coincidencia[a]]] = 1
             # print(IoU[a][mejor_Coincidencia[a]])
-        # else:
-        #     tensor[j][i][contador][:4] = 10/20
+        else:
+            # En caso de ser un achor negativo, pasar el mismo anchor
+            tensor[j][i][contador][0] = anchors[a][2] #cy
+            tensor[j][i][contador][1] = anchors[a][3] #cx
+            tensor[j][i][contador][2] = anchors[a][4] #h
+            tensor[j][i][contador][3] = anchors[a][5] #w
     return tensor
 
 ##############################################################################################
