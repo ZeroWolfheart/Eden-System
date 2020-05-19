@@ -47,7 +47,7 @@ miData.crear_SubSets()
 
 
 # miImagen = 22
-miImagen = 88
+miImagen = 89
 # Original
 pic = miData.cargar_Imagen(miImagen, miData.entrenamiento)
 mask, ids_clase = miData.cargar_Mascara(miImagen, miData.entrenamiento)
@@ -108,61 +108,61 @@ if miConfig.RED_TIPO_SALIDA in ["L","Y"]:
                                                                                     B=miConfig.B,
                                                                                     usar_Idf=miConfig.USAR_IDF)
 elif miConfig.RED_TIPO_SALIDA in ["I"]:
+    deltas_calculados = None
     anchors_propuestos, clases_anchor = Modelo.decodificar_Unico_Tensor_Salida( t1=t1,
                                                                                 anchors=anclas,
                                                                                 S=miConfig.S,
                                                                                 B=miConfig.B,
                                                                                 forma_imagen=(miConfig.FORMA_IMAGEN[0],miConfig.FORMA_IMAGEN[1]))
 # Forma de imprimir
-mx,my = pic.shape[0]//miConfig.S, pic.shape[1]//miConfig.S
-color_malla=[255,255,255]
-pic[:,::my,:] = color_malla
-pic[::mx,:,:] = color_malla
+pic = Visual.dibujar_Malla(configuracion=miConfig,imagen=pic)
+Visual.imprimir_Predicciones(imagen = pic, configuracion = miConfig,
+                          anchors_Propuestos = anchors_propuestos, deltas_Calculados = deltas_calculados,
+                          clases_Anchor = clases_anchor, clases = miData.clases)
+# _, ax = pyplot.subplots(1, figsize=(16,16))
+# height, width = pic.shape[:2]
+# ax.set_ylim(height + 10, -10)
+# ax.set_xlim(-10, width + 10)
+# ax.axis('off')
+# ax.set_title("la propuesta")
 
-_, ax = pyplot.subplots(1, figsize=(16,16))
-height, width = pic.shape[:2]
-ax.set_ylim(height + 10, -10)
-ax.set_xlim(-10, width + 10)
-ax.axis('off')
-ax.set_title("la propuesta")
-
-#imprimir anchors_propuestos, deltas_calculados, clases_anchor
-for i in range(0,len(anchors_propuestos)):
-    y1, x1, y2, x2, iou = anchors_propuestos[i]
-    if miConfig.RED_TIPO_SALIDA in ["L","Y"]:
-        if miConfig.USAR_IDF:
-            dy,dx,logdh,logdw,idf = deltas_calculados[i]
-        else:
-            dy,dx,logdh,logdw = deltas_calculados[i]
+# #imprimir anchors_propuestos, deltas_calculados, clases_anchor
+# for i in range(0,len(anchors_propuestos)):
+#     y1, x1, y2, x2, iou = anchors_propuestos[i]
+#     if miConfig.RED_TIPO_SALIDA in ["L","Y"]:
+#         if miConfig.USAR_IDF:
+#             dy,dx,logdh,logdw,idf = deltas_calculados[i]
+#         else:
+#             dy,dx,logdh,logdw = deltas_calculados[i]
     
-    r,g,b = rn.random(), rn.random(), rn.random()
-    cc = numpy.argmax(clases_anchor[i])
+#     r,g,b = rn.random(), rn.random(), rn.random()
+#     cc = numpy.argmax(clases_anchor[i])
     
-    # indicador
-    if iou > miConfig.DELTA_IOU_MIN_POSITIVO:
-    #if idf == 1:
-        zz=3
-        if miConfig.RED_TIPO_SALIDA in ["L","Y"]:
-            print(dy,dx,logdh,logdw)
-            deltx =  Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,logdh,logdw])
-            print(deltx)
-            amr2 = Rectangle((deltx[1],deltx[0]), deltx[3]-deltx[1], deltx[2]-deltx[0], linewidth=zz, alpha=0.7, linestyle='dashed', edgecolor=(r,g,b), facecolor='none')
-            ax.add_patch(amr2)
+#     # indicador
+#     if iou > miConfig.DELTA_IOU_MIN_POSITIVO:
+#     #if idf == 1:
+#         zz=3
+#         if miConfig.RED_TIPO_SALIDA in ["L","Y"]:
+#             print(dy,dx,logdh,logdw)
+#             deltx =  Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,logdh,logdw])
+#             print(deltx)
+#             amr2 = Rectangle((deltx[1],deltx[0]), deltx[3]-deltx[1], deltx[2]-deltx[0], linewidth=zz, alpha=0.7, linestyle='dashed', edgecolor=(r,g,b), facecolor='none')
+#             ax.add_patch(amr2)
         
-        # print([y1,x1,y2,x2])
-        # print(cc, iou)
+#         # print([y1,x1,y2,x2])
+#         print(cc, iou)
         
-        #ax.text(deltx[1]+2,deltx[0] + 8, "{}%: {}".format(iou*100, miData.clases[cc]), color='w', size=11, backgroundcolor="none")
-        ax.text(x1+2 ,y1+8, "{}%: {}".format(iou*100, miData.clases[cc]), color='w', size=11, backgroundcolor="none")
+#         #ax.text(deltx[1]+2,deltx[0] + 8, "{}%: {}".format(iou*100, miData.clases[cc]), color='w', size=11, backgroundcolor="none")
+#         ax.text(x1+2 ,y1+8, "{}%: {}".format(iou*100, miData.clases[cc]), color='w', size=11, backgroundcolor="none")
         
-        amr = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=2, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
-        ax.add_patch(amr)
+#         amr = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=2, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
+#         ax.add_patch(amr)
         
-    # amr = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=1, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
-    # ax.add_patch(amr)
+#     # amr = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=1, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
+#     # ax.add_patch(amr)
 
-pyplot.imshow(pic)
-for i in range(mask.shape[2]):
-    pyplot.imshow(mask[:,:,i], cmap='gray', alpha=0.2)
+# pyplot.imshow(pic)
+# for i in range(mask.shape[2]):
+#     pyplot.imshow(mask[:,:,i], cmap='gray', alpha=0.2)
 
-pyplot.show()
+# pyplot.show()

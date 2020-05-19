@@ -18,7 +18,7 @@ miRed = Red(configuracion=miConfig)
 #miRed = Red(modelo="pesos/Eden_SystemV4_Frutero_0395.h5")
 miRed.sumarizar_Red()
 miRed.red_a_IMG()
-miRed.red_neuronal.load_weights("modelos/Eden_SystemV4_Frutero_13751.h5")
+miRed.red_neuronal.load_weights("pesos/frutas/Eden_SystemV4_Frutero_13751.h5")
 
 miData = Dataset("Frutero",  "datasets/frutas")
 miData.agregar_Clase("apple")
@@ -77,8 +77,8 @@ checkpoint_path = checkpoint_path.replace("*epoch*", "{epoch:04d}")
 cvs_path = os.path.join("logs", "training_{}.log".format(miData.nombre_Dataset))
 
 # Create log_dir if it does not exist
-if not os.path.exists("pesos"):
-    os.makedirs("pesos")
+if not os.path.exists("pesos/frutas/"):
+    os.makedirs("pesos/frutas/")
 # Create log_dir if it does not exist
 if not os.path.exists("logs"):
     os.makedirs("logs")
@@ -102,11 +102,11 @@ callbacks = [
     KC.ModelCheckpoint(checkpoint_path, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False),
     auto_borrador
 ]
-
+print(callbacks)
 miRed.red_neuronal.fit_generator(
             train_gen,
-            initial_epoch=12854,
-            epochs=15000,
+            initial_epoch=20,
+            epochs=5,
             steps_per_epoch=pasos,
             callbacks=callbacks,
             validation_data=val_gen,
