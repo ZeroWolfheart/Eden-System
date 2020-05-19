@@ -19,6 +19,7 @@ import math
 
 import Utiles
 import Modelo
+import Visual
 from Configuracion import Configuracion
 from Red import Red
 from Dataset import Dataset
@@ -83,6 +84,7 @@ class Analizador:
                 usar_Idf=self._configuracion.USAR_IDF
                 )
         elif self._configuracion.RED_TIPO_SALIDA == 'I':
+            deltas_Calculados = None
             prediccion = self._red.red_neuronal.predict(x)
             anchors_Propuestos, clases_Anchor = Modelo.decodificar_Unico_Tensor_Salida(
                 t1=prediccion[0],
@@ -94,60 +96,13 @@ class Analizador:
         
         respuesta = self._imagen
         # Dibujar malla en imagen
-        if self._configuracion.RESP_MALLA:
-            mx,my = respuesta.shape[0]//self._configuracion.S, respuesta.shape[1]//self._configuracion.S
-            color_malla = [255,255,255]
-            respuesta[:,::my,:] = color_malla
-            respuesta[::mx,:,:] = color_malla
-        
+        respuesta = Visual.dibujar_Malla(
+            configuracion=self._configuracion, imagen=respuesta
+        )
         # Imprimir imagen (ventana contenedora)
-        _, ax = pyplot.subplots(1, figsize=(16,16))
-        altura, base = respuesta.shape[:2]
-        ax.set_ylim(altura + 10, -10)
-        ax.set_xlim(-10, base + 10)
-        ax.axis('off')
-        ax.set_title("Resultado")
-
-        # Imprimir anchors_propuestos, deltas_calculados, clases_anchor
-        # Para cada anchor
-        for i in range(0,len(anchors_Propuestos)):
-            # Valores de la caja (tensor 1)
-            y1, x1, y2, x2, iou = anchors_Propuestos[i]
-            # Si la red tiene dos tensores
-            if self._configuracion.RED_TIPO_SALIDA in ['Y','L']:
-                # Si esta activado el identificador de anchor positivo
-                if self._configuracion.USAR_IDF:
-                    dy,dx,logdh,logdw,idf = deltas_Calculados[i]
-                    #TODO: Expiremental...
-                    iou=idf
-                else:
-                    dy,dx,logdh,logdw = deltas_Calculados[i]
-                # Funcion que unifica los valores devueltos por ambos
-                # tensores en las coordenadas de la caja
-                y1,x1,y2,x2=Utiles.aplicar_Delta_Caja(caja=[y1,x1,y2,x2],delta=[dy,dx,logdh,logdw])
-
-            # Umbral de detección
-            if iou > self._configuracion.DETECCION_CONFIDENCIA_MINIMA:
-                # Generar color de la caja
-                r,g,b = rn.random(), rn.random(), rn.random()
-                # Selccionar clase a la que pertenece el elemento
-                cc = numpy.argmax(clases_Anchor[i])
-                
-                #TODO: Comentar estas 3 lineas
-                print([y1,x1,y2,x2])
-                print(clases_Anchor[i])
-                print(self._clases[cc])
-                # Crear caja
-                box = Rectangle((x1,y1), x2-x1, y2-y1, linewidth=1, alpha=0.7, linestyle='solid', edgecolor=(r,g,b), facecolor='none')
-                ax.add_patch(box)
-                # Formato de % de confidencia
-                porc  = "{0:.2f}".format(iou*100)
-                # Crear etiqueta de la caja
-                ax.text(x1+2,y1 + 8, "{}%: {}".format(porc, self._clases[cc]), color=(r,g,b), size=11, backgroundcolor="none")
-        
-        # Crear e imprimir imagen en el contenedor
-        pyplot.imshow(respuesta)
-        pyplot.show()
+        Visual.imprimir_Predicciones(imagen = respuesta, configuracion = self._configuracion,
+                          anchors_Propuestos = anchors_Propuestos, deltas_Calculados = deltas_Calculados,
+                          clases_Anchor = clases_Anchor, clases = self._clases)
         
 
 class Entrenador:
@@ -263,7 +218,6 @@ class Entrenador:
     def _borrador (self, direcccion):
         # listar elementos en la ruta
         saves = os.listdir(direcccion)
-        print("dir borrador: {}".format(direcccion))
         # borrar si la cantidad es mayor a la establecida en configuracion
         if len(saves) > self._configuracion.GUARDADOS_MAX:
             saves = sorted(saves, reverse=True)
