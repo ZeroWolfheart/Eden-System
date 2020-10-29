@@ -114,7 +114,7 @@ class Interfaz_Grafica:
     
     # Función para abrir labelImg-master
     def iniciar_Etiquetador(self):
-        dirr = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..', 'labelImg-master'))
+        dirr = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '', 'labelImg-master'))
         os.system('/usr/bin/python3 '+ dirr+'/labelImg.py')
 
     # Elegir directorio de dataset

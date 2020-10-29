@@ -94,7 +94,11 @@ class Analizador:
             )
         
         
-        respuesta = self._imagen
+        respuesta, _, _, _, _ = Utiles.reescalar_Imagen(self._imagen, 
+                                                        minDim=self._configuracion.MIN_DIM, 
+                                                        maxDim=self._configuracion.MAX_DIM, 
+                                                        minEscala=self._configuracion.ESCALA_MINIMA, 
+                                                        modo=self._configuracion.MODO_REESCALADO)
         # Dibujar malla en imagen
         respuesta = Visual.dibujar_Malla(
             configuracion=self._configuracion, imagen=respuesta
@@ -148,7 +152,8 @@ class Entrenador:
         # Decesnso de Gradiente Estocastico
         sgd = KO.SGD(lr=self._configuracion.APRENDIZAJE_TASA,
                      momentum=self._configuracion.APRENDIZAJE_MOMENTO,
-                     decay=self._configuracion.PESO_PERDIDA)
+                     #decay=self._configuracion.PESO_PERDIDA
+                     )
         # Compilar la red con el optimizador anterior y error cuadratico medio
         self._red.red_neuronal.compile(optimizer=sgd, loss='mean_squared_error')
         # Crear generador de entrenamiento
@@ -183,7 +188,7 @@ class Entrenador:
         callbacks = []
         if self._configuracion.ENTRENAMIENTO_LOGS:
             callbacks.append(KC.CSVLogger(self._ruta_Logs, separator=',', append=True))
-        callbacks.append(KC.ModelCheckpoint(self._ruta_Pesos, monitor='val_loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False))
+        callbacks.append(KC.ModelCheckpoint(self._ruta_Pesos, monitor='loss', verbose=1, save_best_only=True, mode='min', save_weights_only=False))
         callbacks.append(auto_borrador)
         # Entrenar (Uso del metodo de Keras para entrenar la red neuronal)
         self._red.red_neuronal.fit_generator(
