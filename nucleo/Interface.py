@@ -66,7 +66,7 @@ class Analizador:
                 self._imagen = self._imagen[..., :3]
         return ban
 
-    def analizar_Imagen(self):
+    def analizar_Imagen(self, imprimir=False):
         x = numpy.zeros((1,self._configuracion.FORMA_IMAGEN[0], self._configuracion.FORMA_IMAGEN[1], self._configuracion.FORMA_IMAGEN[2]))
         x[0], _ventana, _escala, _relleno, _aleatorio = Utiles.reescalar_Imagen(self._imagen, 
                                                                            minDim=self._configuracion.MIN_DIM, 
@@ -106,7 +106,7 @@ class Analizador:
         # Imprimir imagen (ventana contenedora)
         Visual.imprimir_Predicciones(imagen = respuesta, configuracion = self._configuracion,
                           anchors_Propuestos = anchors_Propuestos, deltas_Calculados = deltas_Calculados,
-                          clases_Anchor = clases_Anchor, clases = self._clases)
+                          clases_Anchor = clases_Anchor, clases = self._clases, enviarIMG=imprimir)
         
 
 class Entrenador:

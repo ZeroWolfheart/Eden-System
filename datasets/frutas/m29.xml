@@ -1,0 +1,26 @@
+<annotation>
+	<folder>manzanas</folder>
+	<filename>m29.jpeg</filename>
+	<path>/home/matrix-code/Escritorio/EdenSystem/datasets/manzanas/m29.jpeg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>474</width>
+		<height>516</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>apple</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>32</xmin>
+			<ymin>21</ymin>
+			<xmax>453</xmax>
+			<ymax>493</ymax>
+		</bndbox>
+	</object>
+</annotation>

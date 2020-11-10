@@ -1,0 +1,26 @@
+<annotation>
+	<folder>manzanas</folder>
+	<filename>m77.jpeg</filename>
+	<path>/home/matrix-code/Escritorio/EdenSystem/datasets/manzanas/m77.jpeg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>474</width>
+		<height>234</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>apple</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>164</xmin>
+			<ymin>13</ymin>
+			<xmax>377</xmax>
+			<ymax>230</ymax>
+		</bndbox>
+	</object>
+</annotation>

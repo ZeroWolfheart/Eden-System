@@ -9,8 +9,10 @@ resultados/*
 ### Data Sets ###
 kangaroo-master/
 VOC2012/
-frutas/
 peces/
+manzanas/
+naranjas/
+platanos/
 
 ### Datos de Python ###
 __pycache__/

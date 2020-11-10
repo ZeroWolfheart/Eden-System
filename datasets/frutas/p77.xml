@@ -1,0 +1,26 @@
+<annotation>
+	<folder>platanos</folder>
+	<filename>p77.jpeg</filename>
+	<path>/home/matrix-code/Escritorio/EdenSystem/datasets/platanos/p77.jpeg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>474</width>
+		<height>665</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>banana</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>22</xmin>
+			<ymin>72</ymin>
+			<xmax>455</xmax>
+			<ymax>636</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>naranjas</folder>
+	<filename>n117.jpg</filename>
+	<path>/home/matrix-code/Escritorio/EdenSystem/datasets/naranjas/n117.jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>383</width>
+		<height>200</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>orange</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>16</xmin>
+			<ymin>19</ymin>
+			<xmax>193</xmax>
+			<ymax>185</ymax>
+		</bndbox>
+	</object>
+</annotation>

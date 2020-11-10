@@ -2,6 +2,7 @@ import random as rn
 import numpy
 from matplotlib import pyplot
 from matplotlib.patches import Rectangle, Circle
+import skimage.io
 
 from Configuracion import Configuracion
 import Utiles
@@ -28,7 +29,7 @@ def imprimir_Anchors(anchors = None, img = None, config = Configuracion):
 
 def imprimir_Predicciones(imagen = None, configuracion = Configuracion,
                           anchors_Propuestos = None, deltas_Calculados = None,
-                          clases_Anchor = None, clases = []):
+                          clases_Anchor = None, clases = [], enviarIMG=False):
     # Imprimir imagen (ventana contenedora)
     _, ax = pyplot.subplots(1, figsize=(16,16))
     altura, base = imagen.shape[:2]
@@ -75,8 +76,12 @@ def imprimir_Predicciones(imagen = None, configuracion = Configuracion,
             ax.text(x1+2,y1 + 8, "{}%: {}".format(porc, clases[cc]), color=(r,g,b), size=11, backgroundcolor="none")
     
     # Crear e imprimir imagen en el contenedor
-    pyplot.imshow(imagen)
-    pyplot.show()
+    if enviarIMG:
+        pyplot.imshow(imagen)
+        pyplot.savefig("analizado.png", dpi=720)
+    else:
+        pyplot.imshow(imagen)
+        pyplot.show()
 
 def dibujar_Malla(configuracion = Configuracion, imagen = None):
     # Dibujar malla en imagen

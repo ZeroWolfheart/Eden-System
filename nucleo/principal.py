@@ -4,6 +4,7 @@ from tkinter import *
 from PIL import Image, ImageTk
 
 from Interface import Analizador, Entrenador
+from WebService import servidorXMLRCP
 
 
 class Interfaz_Grafica:
@@ -36,7 +37,10 @@ class Interfaz_Grafica:
         self.menu_Configuracion = Menu(self.barra_menu, tearoff=0)
         self.menu_Configuracion.add_command(label="Seleccionar Configuracion", command=self.elegir_Configuracion)
         self.barra_menu.add_cascade(label="Configuración", menu=self.menu_Configuracion)
-
+        # Menu Servidor
+        self.menu_Servidor = Menu(self.barra_menu, tearoff=0)
+        self.menu_Servidor.add_command(label="Iniciar servicio Web", command=self.inicarServidor)
+        self.barra_menu.add_cascade(label="Servidor", menu=self.menu_Servidor)
         # Panel principal
         self.contenedor = Frame(self.root)
         self.contenedor.pack()
@@ -92,12 +96,12 @@ class Interfaz_Grafica:
 
         self.etiqueta_6 = Label (self.contenedor, text="Imagen seleccionada:",
                         relief=FLAT, height=1)
-        self.etiqueta_6.grid(row=5, column=0, padx=10, sticky=W)
+        self.etiqueta_6.grid(row=5, column=0, padx=10, pady=5, sticky=W)
 
         self.etiqueta_61 = Label (self.contenedor, text="Ninguna",
                         relief=RIDGE, height=1, width=50)
-        self.etiqueta_61.grid(row=5, column=1, padx=10, sticky=W)
-
+        self.etiqueta_61.grid(row=5, column=1, padx=10, pady=5, sticky=W)
+        
         self.etiqueta_7 = Label (self.contenedor, text="Epocas para entrenamiento:",
                         relief=FLAT, height=1)
         self.etiqueta_7.grid(row=4, column=2, padx=10, columnspan=2)
@@ -114,12 +118,12 @@ class Interfaz_Grafica:
     
     # Función para abrir labelImg-master
     def iniciar_Etiquetador(self):
-        dirr = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '', 'labelImg-master'))
-        os.system('/usr/bin/python3 '+ dirr+'/labelImg.py')
-
+        #dirr = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '', 'labelImg-master'))
+        #os.system('/usr/bin/python3 '+ dirr+'/labelImg.py')
+        os.system('python3 labelImg-master/labelImg.py')
     # Elegir directorio de dataset
     def elegir_Dataset(self):
-        self.directorio_d = filedialog.askdirectory(initialdir = "datasets", title="Seleccionar Directorio")
+        self.directorio_d = filedialog.askdirectory(initialdir = "../datasets", title="Seleccionar Directorio")
         dirrs = self.directorio_d.split('/')
         if dirrs[-1]=="":
             dirrs[-1]="Ninguno"
@@ -127,7 +131,7 @@ class Interfaz_Grafica:
 
     # Elegir lista de clases
     def elegir_ListaClases(self):
-        archivo = filedialog.askopenfilename(initialdir = "datasets", title="Seleccionar Lista de clases", filetypes=(("Archivo de texto","*.txt"),))
+        archivo = filedialog.askopenfilename(initialdir = "../datasets", title="Seleccionar Lista de clases", filetypes=(("Archivo de texto","*.txt"),))
         dirrs = archivo.split('/')
         if dirrs[-1]=="":
             dirrs[-1]="Ninguna"
@@ -144,7 +148,7 @@ class Interfaz_Grafica:
 
     # Elegir archivo de modelo
     def elegir_Pesos(self):
-        self.archivo_P = filedialog.askopenfilename(initialdir = "pesos", title="Seleccionar Pesos de Red", filetypes=(("Modelos y Pesos","*.h5"),))
+        self.archivo_P = filedialog.askopenfilename(initialdir = "../pesos", title="Seleccionar Pesos de Red", filetypes=(("Modelos y Pesos","*.h5"),))
         dirrs = self.archivo_P.split('/')
         if dirrs[-1]=="":
             dirrs[-1]="Ninguno"
@@ -152,7 +156,7 @@ class Interfaz_Grafica:
 
     # Elegir archivo de configuracion
     def elegir_Configuracion(self):
-        self.archivo_C = filedialog.askopenfilename(initialdir = "config", title="Seleccionar configuración", filetypes=(("Configuración","*.conf"),))
+        self.archivo_C = filedialog.askopenfilename(initialdir = "../config", title="Seleccionar configuración", filetypes=(("Configuración","*.conf"),))
         dirrs = self.archivo_C.split('/')
         if dirrs[-1]=="":
             dirrs[-1]="Ninguna"
@@ -160,7 +164,7 @@ class Interfaz_Grafica:
 
     # Elegir imagen
     def elegir_Imagen(self):
-        self.archivo_I = filedialog.askopenfilename(initialdir = "pruebas", title="Seleccionar Imagen", filetypes=(("Imagenes",("*.jpg", "*.jpeg", "*png",
+        self.archivo_I = filedialog.askopenfilename(initialdir = "../pruebas", title="Seleccionar Imagen", filetypes=(("Imagenes",("*.jpg", "*.jpeg", "*png",
                                                                                                                         "*.bmp", "*.tif", "*.tiff")),))
         dirrs = self.archivo_I.split('/')
         if dirrs[-1]=="":
@@ -179,6 +183,7 @@ class Interfaz_Grafica:
         buscador.cargar_Red(self.archivo_P)
         buscador.analizar_Imagen()
     
+    # Iniciar proceso de entrenamiento
     def entrenar(self):
         entrenador = Entrenador()
         entrenador.cargar_Configuracion(self.archivo_C)
@@ -186,5 +191,11 @@ class Interfaz_Grafica:
         entrenador.cargar_Dataset(ruta=self.directorio_d, nombre=self.etiqueta_21.cget("text"), clases=self.lista_1.get(first=0, last=self.lista_1.size()))
         entrenador.establecer_Epocas_Entrenamiento(cantidad=self.entrada_1.get())
         entrenador.entrenar_Red()
+    
+    # Iniciar Servidor Web para analisis
+    def inicarServidor(self):
+        servidor = servidorXMLRCP()
+        servidor.inicializarBuscador(self.lista_1.get(first=0, last=self.lista_1.size()),self.archivo_C,self.archivo_P)
+        servidor.iniciarServidor()
         
 ventana = Interfaz_Grafica()
